@@ -1081,6 +1081,64 @@
     applyLang();
   }
 
+  /* ================= live database data (Netlify Functions -> Neon Postgres) =================
+     Runs in the background after first paint. If these fail (e.g. DATABASE_URL not yet set
+     in Netlify, or the function isn't deployed), the embedded riskData/schemesData above keep
+     working exactly as before — the site never breaks because of this. */
+  async function loadLiveRiskData(){
+    try{
+      const res = await fetch('/.netlify/functions/get-risk-data');
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      const rows = await res.json();
+      if(!Array.isArray(rows) || rows.length === 0) throw new Error('empty response');
+
+      const byAgeBand = {};
+      const bySex = {};
+      rows.forEach(r => {
+        if(r.age_group && !r.sex && r.state === 'Malaysia' && !byAgeBand[r.age_group]){
+          byAgeBand[r.age_group] = { top_cause_en:r.cause, top_cause_bm:r.cause, share_pct:Number(r.share_pct), deaths:r.deaths };
+        }
+        if(r.sex && !r.age_group && r.state === 'Malaysia'){
+          const key = r.sex.toLowerCase();
+          if(!bySex[key]) bySex[key] = { top_cause_en:r.cause, top_cause_bm:r.cause, share_pct:Number(r.share_pct) };
+        }
+      });
+      if(Object.keys(byAgeBand).length >= 3) riskData.by_age_band = byAgeBand;
+      if(Object.keys(bySex).length >= 2) riskData.by_sex = bySex;
+      console.log('[SaringKu] Live risk data loaded from database:', Object.keys(byAgeBand).length, 'age bands.');
+    } catch(err){
+      console.warn('[SaringKu] Live risk data unavailable, using embedded fallback:', err.message);
+    }
+  }
+
+  async function loadLiveSchemes(){
+    try{
+      const res = await fetch('/.netlify/functions/get-schemes');
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      const rows = await res.json();
+      if(!Array.isArray(rows) || rows.length === 0) throw new Error('empty response');
+
+      let matched = 0;
+      rows.forEach(row => {
+        const local = schemesData.find(s => s.id === row.program_code);
+        if(!local) return;
+        matched++;
+        local.name_en = row.name_en || local.name_en;
+        local.name_bm = row.name_bm || local.name_bm;
+        local.provider = row.provider || local.provider;
+        if(row.cost_rm !== undefined && row.cost_rm !== null) local.cost_rm = Number(row.cost_rm);
+        if(row.covers) local.covers = row.covers.split(',').map(s => s.trim());
+        if(row.how_to_access) local.how_to_access_en = row.how_to_access; // DB has no BM variant of this field; BM text stays as embedded
+        local.url = row.url || local.url;
+        local.copy_en = row.copy_en || local.copy_en;
+        local.copy_bm = row.copy_bm || local.copy_bm;
+      });
+      console.log('[SaringKu] Live scheme data loaded from database:', matched, 'of', schemesData.length, 'programmes matched.');
+    } catch(err){
+      console.warn('[SaringKu] Live scheme data unavailable, using embedded fallback:', err.message);
+    }
+  }
+
   /* ================= init ================= */
   buildSelect(document.getElementById('sex'), sexOptions);
   buildSelect(document.getElementById('state'), stateList, 'Selangor');
@@ -1090,6 +1148,8 @@
   buildSelect(document.getElementById('clinicState'), stateList, 'Selangor');
   loadForm();
   applyLang();
+  loadLiveRiskData();
+  loadLiveSchemes();
 
   /* ---------- loading screen sequence ---------- */
   window.addEventListener('load', function(){
