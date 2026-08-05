@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>SaringKu</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  :root{
+    --maroon:#2E5C8A;
+    --maroon-dark:#1F4166;
+    --tan-border:#d9b98c;
+    --card-bg:#f1ede6;
+    --page-bg:#e9e5de;
+    --green:#4c8c4a;
+    --green-bg:#e4f2d8;
+    --dot-green:#5fae5a;
+    --dot-red:#d9534f;
+    --red-circle:#e2483f;
+    --text-dark:#222;
+    --text-mid:#555;
+    --text-light:#888;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    background:#fff;
+    color:var(--text-dark);
+  }
+  a{ text-decoration:none; }
+
+  /* ---------- top nav ---------- */
+  .topnav{
+    display:flex;
+    align-items:center;
+    gap:28px;
+    padding:14px 6vw;
+    border-bottom:1px solid #eee;
+    position:sticky;
+    top:0;
+    background:#fff;
+    z-index:1000;
+    flex-wrap:wrap;
+  }
+  .topnav-brand{ font-size:20px; font-weight:800; color:var(--maroon); margin-right:8px; }
+  .topnav-tabs{ display:flex; gap:6px; flex:1; flex-wrap:wrap; }
+  .tab-btn{
+    background:none;
+    border:none;
+    padding:9px 16px;
+    border-radius:8px;
+    font-size:14px;
+    font-weight:600;
+    color:var(--text-mid);
+    cursor:pointer;
+  }
+  .tab-btn:hover{ background:var(--card-bg); }
+  .tab-btn.active{ background:var(--maroon); color:#fff; }
+  .lang-toggle{ font-size:12px; cursor:pointer; user-select:none; }
+  .lang-toggle span{ color:var(--text-light); padding:2px 4px; }
+  .lang-toggle span.active{ color:var(--maroon); font-weight:700; }
+
+  /* ---------- page sections ---------- */
+  .page{ display:none; }
+  .page.active{ display:block; animation:fadeIn .3s ease; }
+  @keyframes fadeIn{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+  .container-narrow{ max-width:900px; margin:0 auto; padding:50px 6vw 90px; }
+  .container-wide{ max-width:1100px; margin:0 auto; padding:50px 6vw 90px; }
+
+  /* ---------- home page ---------- */
+  .hero-banner{
+    background:linear-gradient(135deg, var(--maroon) 0%, #1F4166 55%, #142c46 100%);
+    padding:90px 6vw 80px;
+    position:relative;
+    overflow:hidden;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+  }
+  .hero-banner::before{
+    content:'';
+    position:absolute;
+    right:-10%; top:-30%;
+    width:520px; height:520px;
+    border-radius:50%;
+    background:radial-gradient(circle, rgba(255,255,255,.08) 0%, rgba(255,255,255,0) 70%);
+  }
+  .hero-banner-inner{ max-width:640px; position:relative; margin:0 auto; }
+  .hero-badge{
+    display:inline-block;
+    font-size:11.5px;
+    font-weight:700;
+    letter-spacing:.04em;
+    color:#f3e6c9;
+    background:rgba(255,255,255,.12);
+    padding:6px 14px;
+    border-radius:999px;
+    margin-bottom:22px;
+  }
+  .hero-banner h1{ font-size:46px; line-height:1.12; color:#fff; margin:0 0 18px; font-weight:800; }
+  .hero-banner p{ font-size:15.5px; color:#eaded9; line-height:1.6; margin:0 auto 28px; max-width:480px; }
+
+  .btn{
+    background:var(--maroon);
+    color:#fff;
+    border:none;
+    padding:13px 24px;
+    border-radius:8px;
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+    display:inline-block;
+  }
+  .btn:hover{ background:var(--maroon-dark); }
+  .btn-outline{
+    background:#fff;
+    color:var(--maroon);
+    border:1.5px solid var(--maroon);
+    padding:12px 22px;
+    border-radius:8px;
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .features{ display:flex; gap:28px; justify-content:center; padding:10px 6vw 70px; flex-wrap:wrap; }
+  .feature-card{ max-width:280px; text-align:center; }
+  .feature-icon{ font-size:32px; margin-bottom:10px; }
+  .feature-card h3{ font-size:16px; margin:0 0 8px; }
+  .feature-card p{ font-size:13.5px; color:var(--text-mid); line-height:1.55; margin:0; }
+  .site-footer{ text-align:center; padding:40px 6vw 60px; border-top:1px solid #eee; }
+  .site-footer p{ font-size:12px; color:var(--text-light); margin:8px 0 0; }
+
+  /* ---------- Check My Risk page ---------- */
+  .card-block{ background:var(--card-bg); border-radius:14px; padding:34px; }
+  h2.page-title{ font-size:26px; margin:0 0 6px; }
+  .page-sub{ font-size:13.5px; color:var(--text-light); margin:0 0 26px; }
+  .form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:18px 20px; }
+  .form-grid .full{ grid-column:1 / -1; }
+  label.field-label{ display:block; font-size:11px; letter-spacing:.03em; color:var(--text-mid); margin-bottom:6px; text-transform:uppercase; }
+  .input, select.input{
+    width:100%; padding:12px 14px; border:1.5px solid var(--tan-border); border-radius:8px;
+    background:#fffdf9; font-size:15px; color:#222; appearance:none; -webkit-appearance:none;
+  }
+  select.input{
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M0 0l5 6 5-6z' fill='%23888'/></svg>");
+    background-repeat:no-repeat; background-position:right 14px center;
+  }
+  .input-icon-wrap{ position:relative; }
+  .input-icon-wrap .icon{ position:absolute; right:14px; top:50%; transform:translateY(-50%); color:var(--text-light); font-size:14px; cursor:pointer; }
+  .field-error{ font-size:11.5px; color:var(--dot-red); margin-top:10px; display:none; }
+
+  .risk-eyebrow{ color:var(--maroon); font-weight:700; font-size:13px; letter-spacing:.04em; }
+  .risk-lead{ font-size:14px; color:var(--text-mid); margin:8px 0 2px; }
+  .risk-headline{ font-size:32px; font-weight:800; color:var(--maroon); margin:2px 0 20px; text-transform:uppercase; line-height:1.15; }
+  .risk-info{ background:#fff; border-radius:10px; padding:20px; font-size:14px; line-height:1.6; color:#333; margin-bottom:26px; }
+  .compare-label{ font-size:11.5px; letter-spacing:.05em; color:var(--text-mid); text-transform:uppercase; margin-bottom:8px; }
+  .bar{ height:14px; border-radius:4px; margin-bottom:8px; transition:width .4s ease; }
+  .bar.you{ background:var(--maroon); }
+  .bar.rec{ background:#8fbf7f; }
+  .bar-caption{ font-size:13px; color:#333; margin-bottom:16px; }
+  .bar-caption.muted{ color:var(--text-light); font-size:12px; }
+
+  /* ---------- Find a Clinic page ---------- */
+  .clinic-controls{ display:flex; gap:14px; align-items:flex-end; flex-wrap:wrap; margin-bottom:22px; }
+  .clinic-controls .field{ min-width:220px; }
+  .mode-toggle{ display:flex; gap:8px; }
+  .mode-btn{
+    padding:11px 18px; border-radius:8px; border:1.5px solid var(--tan-border);
+    background:#fffdf9; font-size:14px; font-weight:600; color:var(--text-mid); cursor:pointer;
+  }
+  .mode-btn.active{ background:var(--maroon); border-color:var(--maroon); color:#fff; }
+  .map-wrap-full{ height:340px; border-radius:12px; overflow:hidden; border:1px solid var(--tan-border); margin-bottom:26px; position:relative; z-index:1; }
+  .clinic-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:16px; }
+  .clinic-card{
+    background:var(--card-bg); border-radius:12px; padding:18px; cursor:pointer; border:2px solid transparent;
+  }
+  .clinic-card.selected{ border-color:var(--maroon); background:#fbf3ee; }
+  .clinic-card .name-row{ display:flex; align-items:center; gap:8px; font-weight:700; font-size:15px; margin-bottom:6px; }
+  .status-dot{ width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+  .status-dot.green{ background:var(--dot-green); }
+  .status-dot.red{ background:var(--dot-red); }
+  .clinic-card .desc{ font-size:12.5px; color:var(--text-light); line-height:1.5; }
+
+  /* ---------- My Plan page ---------- */
+  .qualify-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(280px,1fr)); gap:18px; margin-bottom:8px; }
+  .qualify-card{ background:var(--card-bg); border-radius:12px; padding:20px 22px; }
+  .qualify-head{ display:flex; align-items:flex-start; gap:10px; font-weight:700; font-size:16px; }
+  .check{ width:20px; height:20px; min-width:20px; background:var(--green); border-radius:50%; color:#fff; font-size:13px; display:flex; align-items:center; justify-content:center; margin-top:1px; }
+  .qualify-desc{ margin:10px 0 4px 30px; font-size:13.5px; color:#444; line-height:1.55; }
+  .qualify-link{ margin-left:30px; color:var(--maroon); font-size:14px; font-weight:600; cursor:pointer; }
+  .target-date{ text-align:center; font-size:13px; color:var(--text-mid); margin:20px 0 6px; }
+
+  .banner-card{ border:1.5px solid var(--tan-border); border-radius:12px; text-align:center; padding:26px 16px; margin:14px 0 24px; }
+  .banner-card .free{ color:var(--maroon); font-weight:800; font-size:26px; letter-spacing:.03em; }
+  .banner-card .zero{ color:#c9a84c; font-weight:700; font-size:16px; margin:2px 0 6px; letter-spacing:.05em; }
+  .banner-card .note{ font-size:12.5px; color:var(--text-light); }
+  .section-h{ color:var(--maroon); font-weight:700; font-size:12.5px; letter-spacing:.03em; margin:20px 0 8px; }
+  ul.plain{ margin:0 0 6px; padding-left:20px; font-size:13.5px; color:#333; line-height:1.65; }
+  .eligible-note{ font-size:11px; color:var(--text-light); margin:-4px 0 6px 20px; }
+  .two-col{ display:flex; gap:30px; }
+  .two-col ul{ flex:1; }
+  .price-box{ background:var(--green-bg); border-radius:8px; text-align:center; padding:14px; margin:18px 0 8px; font-size:13.5px; color:#444; }
+  .price-box .amt{ color:var(--green); font-weight:800; font-size:17px; }
+  ol.plain{ margin:6px 0 6px; padding-left:20px; font-size:13.5px; color:#333; line-height:1.65; }
+  .back-link{ display:inline-block; margin-bottom:20px; font-size:13.5px; color:var(--maroon); font-weight:600; cursor:pointer; }
+
+  .save-icon{ width:70px; height:70px; border-radius:50%; border:3px solid var(--red-circle); display:flex; align-items:center; justify-content:center; margin:0 auto 24px; }
+  .save-icon svg{ width:32px; height:32px; }
+  .save-heading{ text-align:center; font-size:24px; font-weight:800; letter-spacing:.02em; margin-bottom:36px; }
+  .save-sub{ text-align:center; font-size:15px; font-weight:700; letter-spacing:.03em; margin-bottom:16px; }
+  ul.save-list{ list-style:disc; margin:0 auto; padding-left:22px; font-size:14px; color:#333; line-height:1.75; max-width:400px; }
+  .save-actions{ text-align:center; margin-top:36px; }
+
+  @media (max-width:700px){
+    .form-grid{ grid-template-columns:1fr; }
+    .hero-banner h1{ font-size:34px; }
+    .two-col{ flex-direction:column; gap:4px; }
+  }
+
+  /* ---------- loading screen ---------- */
+  #loadingScreen{
+    position:fixed; inset:0;
+    background:#fff;
+    z-index:9999;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    transition:opacity .5s ease, visibility .5s ease;
+  }
+  #loadingScreen.hide{ opacity:0; visibility:hidden; pointer-events:none; }
+  .loading-pulse{ width:74px; height:74px; margin-bottom:18px; }
+  .loading-pulse svg{ width:100%; height:100%; }
+  .loading-pulse-line{
+    stroke:var(--maroon);
+    stroke-width:2.4;
+    fill:none;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+    stroke-dasharray:120;
+    stroke-dashoffset:120;
+    animation:loadPulseDraw 1.1s ease-in-out infinite;
+  }
+  @keyframes loadPulseDraw{
+    0%{ stroke-dashoffset:120; }
+    45%{ stroke-dashoffset:0; }
+    55%{ stroke-dashoffset:0; }
+    100%{ stroke-dashoffset:-120; }
+  }
+  .loading-logo{ font-size:30px; font-weight:800; color:var(--maroon); margin-bottom:26px; letter-spacing:.01em; }
+  .loading-bar-track{ width:220px; height:6px; background:var(--card-bg); border-radius:999px; overflow:hidden; }
+  .loading-bar-fill{
+    height:100%;
+    background:var(--maroon);
+    width:0%;
+    border-radius:999px;
+    animation:loadFill 1.7s ease forwards;
+  }
+  @keyframes loadFill{ from{ width:0%; } to{ width:100%; } }
+</style>
+</head>
+<body>
+
+<div id="loadingScreen">
+  <div class="loading-pulse">
+    <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+      <polyline class="loading-pulse-line" points="2,32 16,32 21,18 27,44 33,26 38,32 58,32"></polyline>
+    </svg>
+  </div>
+  <div class="loading-logo">SaringKu</div>
+  <div class="loading-bar-track"><div class="loading-bar-fill"></div></div>
+</div>
+
+<nav class="topnav">
+  <div class="topnav-brand">SaringKu</div>
+  <div class="topnav-tabs">
+    <button class="tab-btn active" data-tab="home" onclick="showTab('home')" id="navHome"></button>
+    <button class="tab-btn" data-tab="risk" onclick="showTab('risk')" id="navRisk"></button>
+    <button class="tab-btn" data-tab="clinics" onclick="showTab('clinics')" id="navClinics"></button>
+    <button class="tab-btn" data-tab="plan" onclick="showTab('plan')" id="navPlan"></button>
+  </div>
+  <span class="lang-toggle" id="langToggle">
+    <span id="langEN" onclick="setLang('en')">EN</span>|<span id="langBM" onclick="setLang('bm')">BM</span>
+  </span>
+</nav>
+
+<main>
+
+  <!-- PAGE: HOME -->
+  <section class="page active" id="page-home">
+    <div class="hero-banner">
+      <div class="hero-banner-inner">
+        <span class="hero-badge" id="home-badge"></span>
+        <h1 id="home-h1"></h1>
+        <p id="home-p"></p>
+        <button class="btn" onclick="showTab('risk')" id="home-cta"></button>
+      </div>
+    </div>
+
+    <section class="features">
+      <div class="feature-card">
+        <div class="feature-icon">📋</div>
+        <h3 id="feat1-h"></h3>
+        <p id="feat1-p"></p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">❤️</div>
+        <h3 id="feat2-h"></h3>
+        <p id="feat2-p"></p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🏥</div>
+        <h3 id="feat3-h"></h3>
+        <p id="feat3-p"></p>
+      </div>
+    </section>
+
+    <footer class="site-footer">
+      <div class="topnav-brand" style="font-size:18px;">SaringKu</div>
+      <p id="footer-p"></p>
+    </footer>
+  </section>
+
+  <!-- PAGE: CHECK MY RISK -->
+  <section class="page" id="page-risk">
+    <div class="container-narrow">
+
+      <div id="risk-form-block">
+        <h2 class="page-title" id="p-title"></h2>
+        <p class="page-sub" id="p-sub"></p>
+        <div class="card-block">
+          <div class="form-grid">
+            <div>
+              <label class="field-label" id="p-age-label"></label>
+              <input class="input" type="number" id="age" min="0" max="120" value="48">
+            </div>
+            <div>
+              <label class="field-label" id="p-sex-label"></label>
+              <select class="input" id="sex"></select>
+            </div>
+            <div>
+              <label class="field-label" id="p-state-label"></label>
+              <div class="input-icon-wrap">
+                <select class="input" id="state"></select>
+                <span class="icon locate-icon" id="locateIcon" onclick="simulateLocate()">◎</span>
+              </div>
+            </div>
+            <div>
+              <label class="field-label" id="p-smoke-label"></label>
+              <select class="input" id="smoke"></select>
+            </div>
+            <div>
+              <label class="field-label" id="p-checkup-label"></label>
+              <select class="input" id="lastCheck"></select>
+            </div>
+            <div>
+              <label class="field-label" id="p-band-label"></label>
+              <select class="input" id="householdBand"></select>
+            </div>
+          </div>
+          <div class="field-error" id="p-error"></div>
+          <button class="btn" style="margin-top:24px;width:100%;" id="p-btn" onclick="onCheckRisk()"></button>
+        </div>
+      </div>
+
+      <div id="risk-result-block" style="display:none;max-width:640px;margin:0 auto;">
+        <div class="risk-eyebrow" id="h-eyebrow"></div>
+        <div class="risk-lead" id="h-lead"></div>
+        <div class="risk-headline" id="h-headline"></div>
+        <div class="risk-info" id="h-info"></div>
+        <div class="compare-label" id="h-comparelabel"></div>
+        <div class="bar you" id="h-bar-you"></div>
+        <div class="bar-caption" id="h-you"></div>
+        <div class="bar rec" id="h-bar-rec"></div>
+        <div class="bar-caption muted" id="h-rec"></div>
+        <div class="bar-caption muted" id="h-free"></div>
+        <button class="btn" style="width:100%;" id="h-btn" onclick="showTab('plan')"></button>
+        <div class="back-link" style="text-align:center;margin-top:16px;" onclick="editRiskAnswers()" id="h-edit-link"></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- PAGE: FIND A CLINIC -->
+  <section class="page" id="page-clinics">
+    <div class="container-wide">
+      <h2 class="page-title" id="c-title"></h2>
+      <p class="page-sub" id="c-sub"></p>
+
+      <div class="clinic-controls">
+        <div class="field">
+          <label class="field-label" id="c-state-label"></label>
+          <select class="input" id="clinicState" onchange="refreshClinicsPage()"></select>
+        </div>
+        <div class="mode-toggle">
+          <button class="mode-btn active" id="modeKlinikBtn" onclick="setClinicMode('klinik')"></button>
+          <button class="mode-btn" id="modeMohBtn" onclick="setClinicMode('moh')"></button>
+        </div>
+      </div>
+
+      <div class="map-wrap-full"><div id="map-main" style="height:100%;width:100%;"></div></div>
+      <div class="clinic-grid" id="clinic-list-main"></div>
+    </div>
+  </section>
+
+  <!-- PAGE: MY PLAN -->
+  <section class="page" id="page-plan">
+    <div class="container-narrow">
+
+      <div id="plan-cards-block">
+        <h2 class="page-title" id="t-title"></h2>
+        <p class="page-sub" id="t-sub"></p>
+
+        <div class="qualify-grid" id="qualify-grid-main"></div>
+
+        <div class="target-date" id="t-target"></div>
+        <button class="btn" style="width:280px;display:block;margin:0 auto;" id="t-btn" onclick="showPlanSaved()"></button>
+      </div>
+
+      <div id="plan-voucher-block" style="display:none;max-width:620px;margin:0 auto;">
+        <div class="back-link" onclick="showPlanCards()" id="v-back">‹ Back</div>
+        <h2 class="page-title" style="font-size:20px;" id="v-title"></h2>
+        <div class="banner-card">
+          <div class="free" id="v-cost-big"></div>
+          <div class="note" id="v-note"></div>
+        </div>
+        <div class="section-h">WHY YOU QUALIFY</div>
+        <ul class="plain" id="v-why-list"></ul>
+        <div class="section-h">WHAT IS CHECKED / COVERED</div>
+        <ul class="plain" id="v-covers-list"></ul>
+        <div class="price-box"><span class="amt" id="v-pay"></span></div>
+        <div class="section-h">HOW TO ACCESS</div>
+        <p id="v-howto" style="font-size:13.5px;color:#333;line-height:1.6;"></p>
+        <a class="btn" style="width:100%;margin-top:20px;display:block;text-align:center;box-sizing:border-box;" id="v-btn1" target="_blank" rel="noopener"></a>
+        <button class="btn-outline" style="width:100%;margin-top:10px;" id="v-btn2" onclick="showPlanCards()"></button>
+      </div>
+
+      <div id="plan-saved-block" style="display:none;max-width:520px;margin:0 auto;">
+        <div class="save-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#e2483f" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="4 12 9 17 20 6"></polyline>
+          </svg>
+        </div>
+        <div class="save-heading" id="s-congrats"></div>
+        <div class="save-sub" id="s-whatnext"></div>
+        <ul class="save-list">
+          <li id="s-b1"></li><li id="s-b2"></li><li id="s-b3"></li>
+        </ul>
+        <div class="save-actions">
+          <button class="btn" id="s-btn" onclick="showTab('home'); showPlanCards();"></button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<script>
+  /* ================= bilingual dictionary ================= */
+  const dict = {
+    'navHome':       { en:'Home',              bm:'Laman Utama' },
+    'navRisk':       { en:'Check My Risk',      bm:'Semak Risiko' },
+    'navClinics':    { en:'Find a Clinic',      bm:'Cari Klinik' },
+    'navPlan':       { en:'My Plan',            bm:'Pelan Saya' },
+
+    'home-badge':    { en:'● LIVE MALAYSIA HEALTH SCREENING', bm:'● SARINGAN KESIHATAN MALAYSIA' },
+    'home-h1':       { en:'Your Health Guardian.', bm:'Penjaga Kesihatan Anda.' },
+    'home-p':        { en:'Free 2-minute assessment helping Malaysians aged 40+ find the leading health risk in their profile — and the screening they already qualify for, at zero cost.',
+                        bm:'Penilaian percuma 2 minit membantu rakyat Malaysia berumur 40+ mengetahui risiko kesihatan utama mereka — dan saringan yang mereka layak dapat secara percuma.' },
+    'home-cta':      { en:'Check My Risk  →',   bm:'Semak Risiko Saya  →' },
+
+    'feat1-h':       { en:'2-Minute Assessment', bm:'Penilaian 2 Minit' },
+    'feat1-p':       { en:'Answer a few quick questions about age, smoking, and check-up history.',
+                        bm:'Jawab beberapa soalan ringkas tentang umur, tabiat merokok, dan sejarah pemeriksaan.' },
+    'feat2-h':       { en:'Personalised Risk',   bm:'Risiko Diperibadikan' },
+    'feat2-p':       { en:'See your leading health risk compared against recommended screening frequency.',
+                        bm:'Lihat risiko kesihatan utama anda berbanding kekerapan saringan yang disyorkan.' },
+    'feat3-h':       { en:'Free Screening Nearby', bm:'Saringan Percuma Berdekatan' },
+    'feat3-p':       { en:'Get matched to SOCSO, Klinik Kesihatan, and MOH benefits you already qualify for.',
+                        bm:'Dipadankan dengan manfaat PERKESO, Klinik Kesihatan, dan KKM yang anda layak dapat.' },
+    'footer-p':      { en:'A health screening awareness prototype built for Malaysians aged 40+.',
+                        bm:'Prototaip kesedaran saringan kesihatan untuk rakyat Malaysia berumur 40+.' },
+
+    'p-title':       { en:'Check My Risk',      bm:'Semak Risiko Saya' },
+    'p-sub':         { en:'Two minutes. No account needed.', bm:'Dua minit. Tiada akaun diperlukan.' },
+    'p-age-label':   { en:'Age',                bm:'Umur' },
+    'p-sex-label':   { en:'Sex',                bm:'Jantina' },
+    'p-state-label': { en:'State & District',   bm:'Negeri & Daerah' },
+    'p-smoke-label': { en:'Smoking',            bm:'Merokok' },
+    'p-checkup-label':{ en:'Last check-up',     bm:'Pemeriksaan terakhir' },
+    'p-band-label':  { en:'Household income band', bm:'Kumpulan pendapatan isi rumah' },
+    'p-btn':         { en:'Check My Risk  →',   bm:'Semak Risiko Saya  →' },
+    'p-error':       { en:'Please fill in age, smoking and last check-up first.', bm:'Sila isi umur, merokok dan pemeriksaan terakhir dahulu.' },
+
+    'h-comparelabel':{ en:'YOUR SCREENING VS RECOMMENDED', bm:'SARINGAN ANDA VS DISYORKAN' },
+    'h-free':        { en:'The check for this is free for you.', bm:'Pemeriksaan ini adalah percuma untuk anda.' },
+    'h-btn':         { en:'See My Plan  →',     bm:'Lihat Pelan Saya  →' },
+    'h-edit-link':   { en:'‹ Edit my answers',  bm:'‹ Sunting jawapan saya' },
+
+    'c-title':       { en:'Find a Clinic',      bm:'Cari Klinik' },
+    'c-sub':         { en:'Pick your state to see nearby clinics offering free or low-cost screening.',
+                        bm:'Pilih negeri anda untuk melihat klinik berdekatan yang menawarkan saringan percuma atau kos rendah.' },
+    'c-state-label': { en:'State',              bm:'Negeri' },
+
+    't-title':       { en:'Your Plan',           bm:'Pelan Anda' },
+    't-sub':         { en:'Based on your profile, here is what you qualify for.', bm:'Berdasarkan profil anda, berikut adalah apa yang anda layak dapat.' },
+    't-c1-title':    { en:'SOCSO Health Screening', bm:'Saringan Kesihatan PERKESO' },
+    't-c1-desc':     { en:'Free full screening; you have paid for this since your first payslip',
+                        bm:'Saringan penuh percuma; anda telah membayarnya sejak slip gaji pertama anda' },
+    't-c1-link':     { en:'Check your eligibility  →', bm:'Semak kelayakan anda  →' },
+    't-c2-title':    { en:'Klinik Kesihatan',   bm:'Klinik Kesihatan' },
+    't-c2-desc':     { en:'BP, glucose, cholesterol from RM1; near your area',
+                        bm:'Tekanan darah, glukosa, kolesterol dari RM1; berhampiran kawasan anda' },
+    't-c2-link':     { en:'Choose a clinic  →', bm:'Pilih klinik  →' },
+    't-c3-title':    { en:'Quit-smoking support (MOH)', bm:'Sokongan berhenti merokok (KKM)' },
+    't-c3-desc':     { en:'mQuit clinics; covered options', bm:'Klinik mQuit; pilihan yang ditanggung' },
+    't-c3-link':     { en:'Find a clinic  →',   bm:'Cari klinik  →' },
+    't-target':      { en:'Target date: Before 15 Sep', bm:'Tarikh sasaran: Sebelum 15 Sep' },
+    't-btn':         { en:'Save Plan  →',       bm:'Simpan Pelan  →' },
+
+    'v-back':        { en:'‹ Back',             bm:'‹ Kembali' },
+    'v-note':        { en:'You have paid for this', bm:'Anda telah membayar untuk ini' },
+    'v-qualify1':    { en:'Aged 40 and above',  bm:'Berumur 40 hingga 59 tahun' },
+    'v-qualify2':    { en:'Active SOCSO contributor', bm:'Pencarum PERKESO aktif (Skim Keilatan)' },
+    'v-qualify3':    { en:'Benefit not yet used', bm:'Belum menggunakan saringan tahun ini' },
+    'v-eligible-note':{ en:'Eligibility confirmed by PERKESO.', bm:'Kelayakan muktamad disahkan oleh PERKESO dalam aplikasi SEHATi.' },
+    'v-package':     { en:'Private package: RM250 – RM800', bm:'Pakej swasta: RM250 – RM800' },
+    'v-pay':         { en:'You pay: RM 0',      bm:'Anda bayar: RM 0' },
+    'v-claim1':      { en:'Log in to PERKESO Portal', bm:'Log masuk ke Portal PERKESO' },
+    'v-claim2':      { en:'Download your voucher', bm:'Muat turun baucar anda' },
+    'v-claim3':      { en:'Bring voucher + MyKad to Clinic', bm:'Bawa baucar + MyKad ke Klinik' },
+    'v-btn1':        { en:'OPEN PERKESO PORTAL  →', bm:'BUKA PORTAL PERKESO  →' },
+    'v-btn2':        { en:'BACK TO MY PLAN  →',  bm:'KEMBALI KE PELAN SAYA  →' },
+
+    's-congrats':    { en:'CONGRATULATIONS!',   bm:'TAHNIAH!' },
+    's-whatnext':    { en:'WHAT NEXT?',         bm:'APA SETERUSNYA?' },
+    's-b1':          { en:'Print or show this page at the clinic.', bm:'Cetak atau tunjukkan halaman ini di klinik.' },
+    's-b2':          { en:'Complete your screening before the target date.', bm:'Selesaikan saringan anda sebelum tarikh sasaran.' },
+    's-b3':          { en:'Manage appointments through the Klinik Kesihatan website.', bm:'Urus janji temu melalui laman web Klinik Kesihatan.' },
+    's-btn':         { en:'Return to Home  →',  bm:'Kembali ke Halaman Utama  →' },
+
+    'modeKlinikBtn': { en:'Klinik Kesihatan',   bm:'Klinik Kesihatan' },
+    'modeMohBtn':    { en:'MOH Quit-Smoking',   bm:'KKM Berhenti Merokok' },
+  };
+
+  /* ================= form option lists ================= */
+  const sexOptions = [
+    { value:'', en:'Please select', bm:'Sila pilih' },
+    { value:'male', en:'Male', bm:'Lelaki' },
+    { value:'female', en:'Female', bm:'Perempuan' },
+  ];
+  const stateList = ['Selangor','Johor','Kedah','Kelantan','Melaka','Negeri Sembilan','Pahang','Perak','Perlis','Penang',
+    'Sabah','Sarawak','Terengganu','Wilayah Persekutuan Kuala Lumpur','Wilayah Persekutuan Labuan','Wilayah Persekutuan Putrajaya'];
+  const smokeOptions = [
+    { value:'', en:'Please select', bm:'Sila pilih' },
+    { value:'daily', en:'Yes, Daily', bm:'Ya, Setiap Hari' },
+    { value:'sometimes', en:'Yes, Sometimes', bm:'Ya, Kadang-kadang' },
+    { value:'never', en:'No, Never', bm:'Tidak, Tidak Pernah' },
+  ];
+  const lastCheckOptions = [
+    { value:'', en:'Please select', bm:'Sila pilih' },
+    { value:'lt1', en:'Less than 1 year', bm:'Kurang daripada 1 tahun' },
+    { value:'1to5', en:'1 to 5 years', bm:'1 hingga 5 tahun' },
+    { value:'gt5', en:'More than 5 years', bm:'Lebih daripada 5 tahun' },
+  ];
+  const householdBandOptions = [
+    { value:'', en:'Please select', bm:'Sila pilih' },
+    { value:'B40', en:'B40 (lower 40% income)', bm:'B40 (40% berpendapatan rendah)' },
+    { value:'M40', en:'M40 (middle 40% income)', bm:'M40 (40% berpendapatan sederhana)' },
+    { value:'T20', en:'T20 (top 20% income)', bm:'T20 (20% berpendapatan tertinggi)' },
+    { value:'unsure', en:"I'm not sure", bm:'Saya tidak pasti' },
+  ];
+
+  function buildSelect(el, options, keepValue){
+    el.innerHTML = '';
+    options.forEach(o=>{
+      const opt = document.createElement('option');
+      opt.value = o.value !== undefined ? o.value : o;
+      opt.textContent = o.value !== undefined ? o[currentLang] : o;
+      el.appendChild(opt);
+    });
+    if(keepValue !== undefined) el.value = keepValue;
+  }
+
+  /* ================= real data: DOSM mortality/life-expectancy + government scheme rules =================
+     Source: onboarding_database package (Risk_Data.json, Lifetable.json, Schemes.json)
+     Risk_Data: DOSM, Statistics on Causes of Death, Malaysia 2025 (deaths registered 2024, coded ICD-11)
+     Schemes: written & maintained by the SaringKu team; update this object, no other code changes needed */
+  const riskData = {
+    by_age_band: {
+      "0-14":  { top_cause_en:"Pneumonia", top_cause_bm:"Radang Paru-paru", share_pct:5.6,  deaths:244 },
+      "15-40": { top_cause_en:"Transport accidents", top_cause_bm:"Kemalangan Pengangkutan", share_pct:20.0, deaths:2547 },
+      "41-59": { top_cause_en:"Ischaemic heart disease", top_cause_bm:"Penyakit Jantung Iskemik", share_pct:17.6, deaths:5380 },
+      "60+":   { top_cause_en:"Pneumonia", top_cause_bm:"Radang Paru-paru", share_pct:13.9, deaths:11989 }
+    },
+    by_sex: {
+      male:   { top_cause_en:"Ischaemic heart disease", top_cause_bm:"Penyakit Jantung Iskemik", share_pct:15.3 },
+      female: { top_cause_en:"Pneumonia", top_cause_bm:"Radang Paru-paru", share_pct:12.4 }
+    }
+  };
+
+  const schemesData = [
+    {
+      id:'socso_hsp',
+      name_en:'SOCSO Health Screening Programme', name_bm:'Program Saringan Kesihatan PERKESO',
+      provider:'PERKESO / SOCSO',
+      conditions:{ socso_insured:true, age_min:40, age_max:59, nationality:'malaysian' },
+      alt_conditions:{ socso_insured:true, age_min:30, age_max:39, has_health_risk:true },
+      cost_rm:0,
+      covers:['Blood pressure','Blood sugar','Cholesterol','BMI and physical check','Doctor consultation'],
+      how_to_access_en:'Download the SEHATi app, register, check eligibility, then book at a panel clinic with MyKad',
+      how_to_access_bm:'Muat turun aplikasi SEHATi, daftar, semak kelayakan, kemudian tempah di klinik panel dengan MyKad',
+      url:'https://sehati.perkeso.gov.my',
+      copy_en:'Free full screening. You have paid for this since your first payslip.',
+      copy_bm:'Saringan penuh percuma. Anda telah membayarnya sejak slip gaji pertama anda.',
+      route:'voucher'
+    },
+    {
+      id:'peka_b40',
+      name_en:'PeKa B40', name_bm:'PeKa B40',
+      provider:'ProtectHealth / Ministry of Health',
+      conditions:{ age_min:40, household_band:'B40', nationality:'malaysian' },
+      cost_rm:0,
+      covers:['Health screening','Essential medical aid','Cancer treatment incentive','Transport incentive'],
+      how_to_access_en:'Check eligibility and register through ProtectHealth',
+      how_to_access_bm:'Semak kelayakan dan daftar melalui ProtectHealth',
+      url:'https://protecthealth.com.my',
+      copy_en:'Free health screening for B40 households aged 40 and over.',
+      copy_bm:'Saringan kesihatan percuma untuk isi rumah B40 berumur 40 tahun ke atas.',
+      route:'voucher'
+    },
+    {
+      id:'klinik_kesihatan',
+      name_en:'Klinik Kesihatan check', name_bm:'Pemeriksaan Klinik Kesihatan',
+      provider:'Ministry of Health Malaysia',
+      conditions:{},
+      cost_rm:1,
+      covers:['Blood pressure','Blood sugar','Cholesterol'],
+      how_to_access_en:'Walk in to any public health clinic with MyKad',
+      how_to_access_bm:'Datang terus ke mana-mana klinik kesihatan awam dengan MyKad',
+      url:'https://www.moh.gov.my',
+      copy_en:'Basic checks from RM1 at any public clinic. No appointment needed.',
+      copy_bm:'Pemeriksaan asas dari RM1 di mana-mana klinik kesihatan. Tanpa temujanji.',
+      route:'clinics-klinik'
+    },
+    {
+      id:'mquit',
+      name_en:'mQuit smoking cessation support', name_bm:'Sokongan berhenti merokok mQuit',
+      provider:'Ministry of Health Malaysia',
+      conditions:{ is_smoker:true },
+      cost_rm:0,
+      covers:['Counselling','Nicotine replacement where indicated'],
+      how_to_access_en:'Attend an mQuit clinic; list available through MOH',
+      how_to_access_bm:'Hadir ke klinik mQuit; senarai boleh didapati melalui KKM',
+      url:'https://www.moh.gov.my',
+      copy_en:'Covered quit-smoking support at participating clinics.',
+      copy_bm:'Sokongan berhenti merokok yang ditanggung di klinik terpilih.',
+      route:'clinics-moh'
+    }
+  ];
+
+  function getAgeGroup(age){
+    if(age <= 14) return '0-14';
+    if(age <= 40) return '15-40';
+    if(age <= 59) return '41-59';
+    return '60+';
+  }
+
+  /* Checks a profile object against a scheme's condition set. Unknown/unset profile fields
+     (e.g. socso_insured, nationality) default to true, matching this app's target persona
+     (an employed, Malaysian, SOCSO-contributing user) since the form does not collect them. */
+  function matchesConditions(cond, profile){
+    if(!cond) return false;
+    if(cond.age_min !== undefined && profile.age < cond.age_min) return false;
+    if(cond.age_max !== undefined && profile.age > cond.age_max) return false;
+    if(cond.household_band !== undefined && profile.household_band !== cond.household_band) return false;
+    if(cond.is_smoker !== undefined && cond.is_smoker !== profile.is_smoker) return false;
+    if(cond.has_health_risk !== undefined && cond.has_health_risk !== profile.has_health_risk) return false;
+    if(cond.socso_insured !== undefined && cond.socso_insured !== (profile.socso_insured !== false)) return false;
+    if(cond.nationality !== undefined && cond.nationality !== (profile.nationality || 'malaysian')) return false;
+    return true;
+  }
+
+  function evaluateSchemes(profile){
+    return schemesData.map(scheme => {
+      const eligible = matchesConditions(scheme.conditions, profile) ||
+                        (scheme.alt_conditions && matchesConditions(scheme.alt_conditions, profile));
+      return { scheme, eligible };
+    });
+  }
+
+  /* ================= risk tiers ================= */
+  let currentLang = 'en';
+  let currentTab = 'home';
+  let lastResult = null;
+  let lastEligibility = null;
+  let lastProfile = null;
+
+  function calcRisk(){
+    const age = Number(document.getElementById('age').value || 0);
+    const sex = document.getElementById('sex').value;
+    const smoke = document.getElementById('smoke').value;
+    const lastCheck = document.getElementById('lastCheck').value;
+    const householdBand = document.getElementById('householdBand').value;
+
+    if(!document.getElementById('age').value || !smoke || !lastCheck){
+      document.getElementById('p-error').style.display = 'block';
+      return false;
+    }
+    document.getElementById('p-error').style.display = 'none';
+
+    // risk score still drives the "you vs recommended" visual comparison and the
+    // has_health_risk flag used by SOCSO HSP's 30-39 alt eligibility condition
+    let score = 0;
+    if(age >= 40) score += 2;
+    if(smoke === 'daily') score += 2;
+    else if(smoke === 'sometimes') score += 1;
+    if(lastCheck === 'gt5') score += 2;
+    else if(lastCheck === '1to5') score += 1;
+
+    // leading cause + share_pct now come straight from DOSM Risk_Data.json (age-band first,
+    // falling back to sex-band if no age-band match — age-band always matches here)
+    const ageGroup = getAgeGroup(age);
+    const ageBand = riskData.by_age_band[ageGroup];
+    const sexBand = sex ? riskData.by_sex[sex] : null;
+    const causeEn = ageBand.top_cause_en;
+    const causeBm = ageBand.top_cause_bm;
+    const sharePct = ageBand.share_pct;
+
+    const lastCheckLabel = lastCheckOptions.find(o=>o.value===lastCheck);
+
+    lastResult = {
+      score, age, ageGroup, sharePct,
+      headline: { en:causeEn.toUpperCase(), bm:causeBm.toUpperCase() },
+      info: {
+        en: `Among Malaysians aged ${ageGroup}, ${causeEn.toLowerCase()} accounts for ${sharePct}% of certified deaths (DOSM 2025), the leading cause in this age group.` +
+            (sexBand ? ` For ${sex === 'male' ? 'men' : 'women'} nationally, ${sexBand.top_cause_en.toLowerCase()} leads at ${sexBand.share_pct}%.` : ''),
+        bm: `Bagi rakyat Malaysia berumur ${ageGroup}, ${causeBm.toLowerCase()} menyumbang ${sharePct}% daripada kematian disahkan (DOSM 2025), punca utama dalam kumpulan umur ini.` +
+            (sexBand ? ` Bagi ${sex === 'male' ? 'lelaki' : 'wanita'} secara kebangsaan, ${sexBand.top_cause_bm.toLowerCase()} mendahului pada ${sexBand.share_pct}%.` : ''),
+      },
+      youWidth: lastCheck === 'gt5' ? 90 : lastCheck === '1to5' ? 60 : 30,
+      recWidth: age >= 40 ? 25 : 70,
+      youText: {
+        en: 'You: ' + lastCheckLabel.en + ' since last check',
+        bm: 'Anda: ' + lastCheckLabel.bm + ' sejak pemeriksaan terakhir',
+      },
+      recText: age >= 40
+        ? { en:'Recommended: Every year from 40', bm:'Disyorkan: Setiap tahun dari umur 40' }
+        : { en:'Recommended: General check-up every 2–3 years', bm:'Disyorkan: Pemeriksaan umum setiap 2-3 tahun' },
+    };
+
+    lastProfile = {
+      age, sex, householdBand,
+      household_band: householdBand,
+      is_smoker: smoke !== 'never' && smoke !== '',
+      has_health_risk: score >= 2,
+      socso_insured: true,      // assumed: form doesn't collect this; matches target persona (employed, SOCSO-contributing)
+      nationality: 'malaysian', // assumed: form doesn't collect this; matches target persona
+    };
+    lastEligibility = evaluateSchemes(lastProfile);
+
+    return true;
+  }
+
+  function renderHasil(){
+    if(!lastResult) return;
+    document.getElementById('h-eyebrow').textContent = currentLang==='en' ? 'YOUR ANALYSIS' : 'ANALISIS ANDA';
+    document.getElementById('h-lead').textContent = currentLang==='en' ? 'Your leading risk:' : 'Risiko utama anda:';
+    document.getElementById('h-headline').textContent = lastResult.headline[currentLang];
+    document.getElementById('h-info').textContent = lastResult.info[currentLang];
+    document.getElementById('h-bar-you').style.width = lastResult.youWidth + '%';
+    document.getElementById('h-bar-rec').style.width = lastResult.recWidth + '%';
+    document.getElementById('h-you').textContent = lastResult.youText[currentLang];
+    document.getElementById('h-rec').textContent = lastResult.recText[currentLang];
+  }
+
+  function onCheckRisk(){
+    if(!calcRisk()) return;
+    saveForm();
+    document.getElementById('risk-form-block').style.display = 'none';
+    document.getElementById('risk-result-block').style.display = 'block';
+    renderHasil();
+  }
+
+  function editRiskAnswers(){
+    document.getElementById('risk-result-block').style.display = 'none';
+    document.getElementById('risk-form-block').style.display = 'block';
+    window.scrollTo({ top:0, behavior:'instant' });
+  }
+
+  /* ================= localStorage persistence ================= */
+  function saveForm(){
+    const data = {
+      age: document.getElementById('age').value,
+      sex: document.getElementById('sex').value,
+      state: document.getElementById('state').value,
+      smoke: document.getElementById('smoke').value,
+      lastCheck: document.getElementById('lastCheck').value,
+      householdBand: document.getElementById('householdBand').value,
+    };
+    try{ localStorage.setItem('saringku_form', JSON.stringify(data)); }catch(e){}
+  }
+  function loadForm(){
+    let data = null;
+    try{ data = JSON.parse(localStorage.getItem('saringku_form')); }catch(e){}
+    if(!data) return;
+    if(data.age) document.getElementById('age').value = data.age;
+    if(data.sex) document.getElementById('sex').value = data.sex;
+    if(data.state) document.getElementById('state').value = data.state;
+    if(data.smoke) document.getElementById('smoke').value = data.smoke;
+    if(data.lastCheck) document.getElementById('lastCheck').value = data.lastCheck;
+    if(data.householdBand) document.getElementById('householdBand').value = data.householdBand;
+  }
+
+  /* ================= clinic data (16 states) ================= */
+  const stateData = {
+    'Selangor':        { city:'Klang',      lat:3.0333, lng:101.4500, areas:['Klang Jaya','Bandar Botanic','Pelabuhan Klang','Gadong'] },
+    'Johor':            { city:'Johor Bahru',lat:1.4927, lng:103.7414, areas:['Tampoi','Larkin','Skudai','Pasir Gudang'] },
+    'Kedah':            { city:'Alor Setar', lat:6.1184, lng:100.3685, areas:['Kubang Pasu','Anak Bukit','Pumpong','Langgar'] },
+    'Kelantan':         { city:'Kota Bharu', lat:6.1254, lng:102.2381, areas:['Kubang Kerian','Wakaf Che Yeh','Pengkalan Chepa','Bunut Payong'] },
+    'Melaka':           { city:'Melaka',     lat:2.1896, lng:102.2501, areas:['Bukit Beruang','Ayer Keroh','Klebang','Batu Berendam'] },
+    'Negeri Sembilan':  { city:'Seremban',   lat:2.7297, lng:101.9381, areas:['Senawang','Rasah','Ampangan','Nilai'] },
+    'Pahang':           { city:'Kuantan',    lat:3.8077, lng:103.3260, areas:['Beserah','Gambang','Semambu','Indera Mahkota'] },
+    'Perak':            { city:'Ipoh',       lat:4.5975, lng:101.0901, areas:['Menglembu','Chemor','Falim','Tambun'] },
+    'Perlis':           { city:'Kangar',     lat:6.4414, lng:100.1986, areas:['Kangar','Arau','Padang Besar','Simpang Empat'] },
+    'Penang':           { city:'George Town',lat:5.4141, lng:100.3288, areas:['Air Itam','Jelutong','Gelugor','Bayan Baru'] },
+    'Sabah':            { city:'Kota Kinabalu', lat:5.9804, lng:116.0735, areas:['Likas','Inanam','Penampang','Putatan'] },
+    'Sarawak':          { city:'Kuching',    lat:1.5535, lng:110.3593, areas:['Petra Jaya','Padungan','Batu Kawa','Kota Sentosa'] },
+    'Terengganu':       { city:'Kuala Terengganu', lat:5.3117, lng:103.1324, areas:['Chabang Tiga','Batu Rakit','Losong','Wakaf Tapai'] },
+    'Wilayah Persekutuan Kuala Lumpur': { city:'Kuala Lumpur', lat:3.1390, lng:101.6869, areas:['Cheras','Setapak','Kepong','Bangsar'] },
+    'Wilayah Persekutuan Labuan':       { city:'Labuan',  lat:5.2831, lng:115.2308, areas:['Labuan Town','Victoria','Rancha-Rancha','Patau-Patau'] },
+    'Wilayah Persekutuan Putrajaya':    { city:'Putrajaya', lat:2.9264, lng:101.6964, areas:['Presint 8','Presint 9','Presint 11','Presint 14'] },
+  };
+  const serviceTemplates = [
+    { status:'green', desc: a => `BP, glucose, cholesterol, mQuit. ${a}.` },
+    { status:'green', desc: a => `Heart screening, diabetes check. ${a}.` },
+    { status:'green', desc: a => `Mortality data check, referrals. ${a}.` },
+    { status:'red',   desc: a => `Senior-friendly checks. ${a}.` },
+  ];
+  const coordOffsets = [ [0.012,-0.010], [-0.006,0.014], [-0.014,-0.012], [0.020,0.006] ];
+
+  function getClinicsForState(stateName){
+    const s = stateData[stateName] || stateData['Selangor'];
+    return s.areas.map((area, i)=>({
+      name: `Klinik Kesihatan ${area}`,
+      desc: serviceTemplates[i].desc(area),
+      status: serviceTemplates[i].status,
+      lat: s.lat + coordOffsets[i][0],
+      lng: s.lng + coordOffsets[i][1],
+    }));
+  }
+
+  let mainMap = null;
+  let mainMarkers = [];
+  let mainDepotMarker = null;
+  let clinicMode = 'klinik'; // 'klinik' or 'moh'
+  let currentClinics = [];
+
+  function setClinicMode(mode){
+    clinicMode = mode;
+    document.getElementById('modeKlinikBtn').classList.toggle('active', mode==='klinik');
+    document.getElementById('modeMohBtn').classList.toggle('active', mode==='moh');
+    refreshClinicsPage();
+  }
+
+  function refreshClinicsPage(){
+    const stateName = document.getElementById('clinicState').value || 'Selangor';
+    const clinics = getClinicsForState(stateName);
+    currentClinics = clinics;
+    const mqit = clinicMode === 'moh';
+
+    const listEl = document.getElementById('clinic-list-main');
+    listEl.innerHTML =
+      `<div style="grid-column:1/-1;font-size:11px;color:var(--text-light);margin-bottom:4px;">${currentLang==='en' ? 'Sample clinics for demo purposes' : 'Klinik contoh untuk tujuan demo'}</div>` +
+      clinics.map((c,i) => `
+        <div class="clinic-card" onclick="selectClinicCard(${i}, this)">
+          <div class="name-row"><span class="status-dot ${c.status}"></span>${c.name}${mqit ? ' (mQuit)' : ''}</div>
+          <div class="desc">${c.desc}</div>
+        </div>
+      `).join('');
+
+    if(mainMap){
+      mainMarkers.forEach(m => mainMap.removeLayer(m));
+      if(mainDepotMarker) mainMap.removeLayer(mainDepotMarker);
+      const centerLat = clinics.reduce((sum,c)=>sum+c.lat,0) / clinics.length;
+      const centerLng = clinics.reduce((sum,c)=>sum+c.lng,0) / clinics.length;
+      const depotIcon = L.divIcon({ className:'', html:'<div style="width:12px;height:12px;border-radius:50%;background:#2E5C8A;border:2px solid #fff;box-shadow:0 0 0 2px #2E5C8A55;"></div>' });
+      mainDepotMarker = L.marker([centerLat, centerLng], { icon: depotIcon }).addTo(mainMap).bindPopup(currentLang==='en' ? 'Your area (demo location)' : 'Kawasan anda (lokasi demo)');
+      mainMarkers = clinics.map((c,i)=>{
+        const color = c.status === 'green' ? '#5fae5a' : '#d9534f';
+        const icon = L.divIcon({ className:'', html:`<div style="width:14px;height:14px;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.4);"></div>` });
+        const m = L.marker([c.lat, c.lng], { icon }).addTo(mainMap);
+        m.bindPopup(c.name);
+        m.on('click', ()=> selectClinicCardByIndex(i));
+        return m;
+      });
+      mainMap.setView([centerLat, centerLng], 12);
+    }
+  }
+
+  function selectClinicCard(idx, el){
+    document.querySelectorAll('.clinic-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    if(mainMap && mainMarkers[idx] && currentClinics[idx]){
+      const c = currentClinics[idx];
+      mainMap.setView([c.lat, c.lng], 15);
+      mainMarkers[idx].openPopup();
+    }
+  }
+  function selectClinicCardByIndex(idx){
+    const cards = document.querySelectorAll('.clinic-card');
+    cards.forEach(c => c.classList.remove('selected'));
+    if(cards[idx]) cards[idx].classList.add('selected');
+    if(currentClinics[idx]) mainMap.setView([currentClinics[idx].lat, currentClinics[idx].lng], 15);
+  }
+
+  function initMainMap(){
+    if(mainMap || typeof L === 'undefined') return;
+    mainMap = L.map('map-main', { zoomControl:true, attributionControl:false }).setView([3.5, 102.5], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:18 }).addTo(mainMap);
+  }
+
+  function simulateLocate(){
+    const icon = document.getElementById('locateIcon');
+    icon.textContent = '…';
+    setTimeout(()=>{
+      document.getElementById('state').value = 'Selangor';
+      icon.textContent = '✓';
+      setTimeout(()=>{ icon.textContent = '◎'; }, 1200);
+    }, 700);
+  }
+
+  /* ================= tab navigation ================= */
+  function showTab(name){
+    currentTab = name;
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + name).classList.add('active');
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+    window.scrollTo({ top:0, behavior:'instant' });
+
+    if(name === 'clinics'){
+      if(document.getElementById('clinicState').value === '') document.getElementById('clinicState').value = 'Selangor';
+      initMainMap();
+      setTimeout(()=>{ if(mainMap) mainMap.invalidateSize(); refreshClinicsPage(); }, 150);
+    }
+    if(name === 'plan'){
+      renderPlanCards();
+    }
+  }
+
+  /* Renders the qualify-grid using live eligibility results from evaluateSchemes().
+     If the person hasn't actually completed Check My Risk yet, shows a prompt instead of
+     silently calculating a "plan" off whatever happens to be sitting in the form. */
+  function renderPlanCards(){
+    const grid = document.getElementById('qualify-grid-main');
+    const targetEl = document.getElementById('t-target');
+    const saveBtn = document.getElementById('t-btn');
+
+    if(!lastEligibility){
+      grid.innerHTML = `
+        <div style="grid-column:1/-1;text-align:center;padding:40px 20px;background:var(--card-bg);border-radius:12px;">
+          <p style="font-size:14px;color:var(--text-mid);margin:0 0 18px;">
+            ${currentLang==='en'
+              ? "You haven't completed Check My Risk yet — do that first so we can show what you actually qualify for."
+              : 'Anda belum melengkapkan Semak Risiko Saya — lengkapkannya dahulu supaya kami boleh tunjukkan apa yang anda layak dapat.'}
+          </p>
+          <button class="btn" onclick="showTab('risk')">${currentLang==='en' ? 'Check My Risk  →' : 'Semak Risiko Saya  →'}</button>
+        </div>`;
+      targetEl.style.display = 'none';
+      saveBtn.style.display = 'none';
+      return;
+    }
+    targetEl.style.display = '';
+    saveBtn.style.display = '';
+
+    grid.innerHTML = lastEligibility.map(({scheme, eligible}) => `
+      <div class="qualify-card" style="${eligible ? '' : 'opacity:.55;'}">
+        <div class="qualify-head">
+          <span class="check" style="${eligible ? '' : 'background:#999;'}">${eligible ? '✓' : '–'}</span>
+          <span>${scheme[currentLang==='en' ? 'name_en' : 'name_bm']}</span>
+        </div>
+        <div class="qualify-desc">${scheme[currentLang==='en' ? 'copy_en' : 'copy_bm']}</div>
+        ${eligible
+          ? `<div class="qualify-link" onclick="openScheme('${scheme.id}')">${currentLang==='en' ? 'View details' : 'Lihat butiran'}  →</div>`
+          : `<div class="qualify-desc" style="font-style:italic;">${currentLang==='en' ? 'Not currently eligible' : 'Tidak layak buat masa ini'}</div>`
+        }
+      </div>
+    `).join('');
+  }
+
+  function openScheme(schemeId){
+    const scheme = schemesData.find(s => s.id === schemeId);
+    if(!scheme) return;
+    if(scheme.route === 'clinics-klinik'){ goToClinicsFromPlan('klinik'); return; }
+    if(scheme.route === 'clinics-moh'){ goToClinicsFromPlan('moh'); return; }
+    showPlanVoucher(scheme);
+  }
+
+  function goToClinicsFromPlan(mode){
+    setClinicMode(mode);
+    showTab('clinics');
+  }
+
+  function showPlanVoucher(scheme){
+    document.getElementById('plan-cards-block').style.display = 'none';
+    document.getElementById('plan-voucher-block').style.display = 'block';
+    document.getElementById('plan-saved-block').style.display = 'none';
+
+    document.getElementById('v-title').textContent = scheme[currentLang==='en' ? 'name_en' : 'name_bm'];
+    document.getElementById('v-cost-big').textContent = scheme.cost_rm === 0 ? 'FREE' : ('RM ' + scheme.cost_rm);
+    document.getElementById('v-note').textContent = scheme[currentLang==='en' ? 'copy_en' : 'copy_bm'];
+
+    const cond = { ...scheme.conditions };
+    const whyItems = [];
+    if(cond.age_min !== undefined || cond.age_max !== undefined){
+      whyItems.push(currentLang==='en'
+        ? `Aged ${cond.age_min || 0}${cond.age_max ? '–' + cond.age_max : '+'}`
+        : `Berumur ${cond.age_min || 0}${cond.age_max ? '–' + cond.age_max : '+'}`);
+    }
+    if(cond.socso_insured) whyItems.push(currentLang==='en' ? 'Active SOCSO contributor' : 'Pencarum PERKESO aktif');
+    if(cond.household_band) whyItems.push(currentLang==='en' ? `Household income band: ${cond.household_band}` : `Kumpulan pendapatan isi rumah: ${cond.household_band}`);
+    if(cond.is_smoker) whyItems.push(currentLang==='en' ? 'Current smoker' : 'Perokok semasa');
+    if(cond.nationality) whyItems.push(currentLang==='en' ? 'Malaysian citizen' : 'Warganegara Malaysia');
+    if(whyItems.length === 0) whyItems.push(currentLang==='en' ? 'Open to everyone, no conditions' : 'Terbuka untuk semua, tiada syarat');
+    document.getElementById('v-why-list').innerHTML = whyItems.map(t => `<li>${t}</li>`).join('');
+
+    document.getElementById('v-covers-list').innerHTML = scheme.covers.map(c => `<li>${c}</li>`).join('');
+    document.getElementById('v-pay').textContent = (currentLang==='en' ? 'You pay: ' : 'Anda bayar: ') + (scheme.cost_rm === 0 ? 'RM 0' : ('RM ' + scheme.cost_rm));
+    document.getElementById('v-howto').textContent = scheme[currentLang==='en' ? 'how_to_access_en' : 'how_to_access_bm'];
+
+    const btn1 = document.getElementById('v-btn1');
+    btn1.href = scheme.url;
+    btn1.textContent = (currentLang==='en' ? 'OPEN ' : 'BUKA ') + scheme.provider.toUpperCase() + '  →';
+    document.getElementById('v-btn2').textContent = currentLang==='en' ? 'BACK TO MY PLAN  →' : 'KEMBALI KE PELAN SAYA  →';
+    document.getElementById('v-back').textContent = currentLang==='en' ? '‹ Back' : '‹ Kembali';
+
+    lastOpenedScheme = scheme;
+  }
+  function showPlanCards(){
+    document.getElementById('plan-cards-block').style.display = 'block';
+    document.getElementById('plan-voucher-block').style.display = 'none';
+    document.getElementById('plan-saved-block').style.display = 'none';
+  }
+  function showPlanSaved(){
+    document.getElementById('plan-cards-block').style.display = 'none';
+    document.getElementById('plan-voucher-block').style.display = 'none';
+    document.getElementById('plan-saved-block').style.display = 'block';
+  }
+  let lastOpenedScheme = null;
+
+  /* ================= language ================= */
+  function applyLang(){
+    for(const id in dict){
+      const el = document.getElementById(id);
+      if(el) el.textContent = dict[id][currentLang];
+    }
+    buildSelect(document.getElementById('sex'), sexOptions, document.getElementById('sex').value);
+    buildSelect(document.getElementById('state'), stateList, document.getElementById('state').value || 'Selangor');
+    buildSelect(document.getElementById('smoke'), smokeOptions, document.getElementById('smoke').value);
+    buildSelect(document.getElementById('lastCheck'), lastCheckOptions, document.getElementById('lastCheck').value);
+    buildSelect(document.getElementById('householdBand'), householdBandOptions, document.getElementById('householdBand').value);
+    buildSelect(document.getElementById('clinicState'), stateList, document.getElementById('clinicState').value || 'Selangor');
+
+    document.getElementById('langEN').classList.toggle('active', currentLang === 'en');
+    document.getElementById('langBM').classList.toggle('active', currentLang === 'bm');
+    renderHasil();
+    if(currentTab === 'plan'){
+      if(document.getElementById('plan-voucher-block').style.display === 'block' && lastOpenedScheme){
+        showPlanVoucher(lastOpenedScheme);
+      } else {
+        renderPlanCards();
+      }
+    }
+  }
+  function setLang(lang){
+    currentLang = lang;
+    applyLang();
+  }
+
+  /* ================= init ================= */
+  buildSelect(document.getElementById('sex'), sexOptions);
+  buildSelect(document.getElementById('state'), stateList, 'Selangor');
+  buildSelect(document.getElementById('smoke'), smokeOptions);
+  buildSelect(document.getElementById('lastCheck'), lastCheckOptions);
+  buildSelect(document.getElementById('householdBand'), householdBandOptions);
+  buildSelect(document.getElementById('clinicState'), stateList, 'Selangor');
+  loadForm();
+  applyLang();
+
+  /* ---------- loading screen sequence ---------- */
+  window.addEventListener('load', function(){
+    setTimeout(function(){
+      const ls = document.getElementById('loadingScreen');
+      if(ls){
+        ls.classList.add('hide');
+        setTimeout(()=> ls.remove(), 600);
+      }
+    }, 1700);
+  });
+</script>
+
+</body>
+</html>
