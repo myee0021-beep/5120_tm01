@@ -12,7 +12,7 @@ exports.handler = async function () {
     const sql = neon(process.env.DATABASE_URL);
     const rows = await sql`
       SELECT program_code, name_en, name_bm, provider, cost_rm, covers, how_to_access, url, copy_en, copy_bm
-      FROM "Screening_Program"
+      FROM screening_program
     `;
     return {
       statusCode: 200,

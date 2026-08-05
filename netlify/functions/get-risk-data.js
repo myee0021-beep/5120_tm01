@@ -14,7 +14,7 @@ exports.handler = async function () {
     const sql = neon(process.env.DATABASE_URL);
     const rows = await sql`
       SELECT year, age_group, sex, state, cause, deaths, share_pct
-      FROM "Mortality"
+      FROM mortality
       ORDER BY age_group, share_pct DESC
     `;
     return {
