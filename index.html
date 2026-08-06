@@ -191,6 +191,10 @@
   }
 
   .home-map-section{ max-width:760px; margin:0 auto; padding:44px 6vw 10px; }
+  .home-map-card{
+    background:#fff; border-radius:16px; padding:28px 30px;
+    box-shadow:0 4px 20px rgba(0,0,0,.08); border:1px solid #eee;
+  }
 
   .home-map-header{
     display:flex; align-items:flex-end; justify-content:space-between; gap:20px;
@@ -542,18 +546,20 @@
     </section>
 
     <section class="home-map-section">
-      <div class="home-map-header">
-        <div>
-          <div class="home-map-eyebrow" id="hm-eyebrow"></div>
-          <h2 class="section-title" style="margin:2px 0 4px;" id="hm-title"></h2>
-          <p class="page-sub" style="margin:0;" id="hm-sub"></p>
+      <div class="home-map-card">
+        <div class="home-map-header">
+          <div>
+            <div class="home-map-eyebrow" id="hm-eyebrow"></div>
+            <h2 class="section-title" style="margin:2px 0 4px;" id="hm-title"></h2>
+            <p class="page-sub" style="margin:0;" id="hm-sub"></p>
+          </div>
+          <button class="btn" onclick="getMyLocation()" id="hm-locate-btn" style="white-space:nowrap;">📍 <span id="hm-locate-label"></span></button>
         </div>
-        <button class="btn" onclick="getMyLocation()" id="hm-locate-btn" style="white-space:nowrap;">📍 <span id="hm-locate-label"></span></button>
-      </div>
-      <div class="map-wrap-full" style="height:280px;"><div id="map-home" style="height:100%;width:100%;"></div></div>
-      <div class="home-map-legend">
-        <span><span class="legend-dot green"></span><span id="hm-legend1"></span></span>
-        <span><span class="legend-dot amber"></span><span id="hm-legend2"></span></span>
+        <div class="map-wrap-full" style="height:280px;"><div id="map-home" style="height:100%;width:100%;"></div></div>
+        <div class="home-map-legend">
+          <span><span class="legend-dot green"></span><span id="hm-legend1"></span></span>
+          <span><span class="legend-dot amber"></span><span id="hm-legend2"></span></span>
+        </div>
       </div>
     </section>
 
