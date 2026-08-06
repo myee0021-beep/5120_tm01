@@ -153,7 +153,35 @@
   .features{ display:flex; gap:24px; justify-content:center; padding:44px 6vw 70px; flex-wrap:wrap; max-width:1100px; margin:0 auto; }
 
   /* home interactive map */
+  /* home: Find a Health Service card (like healthdirect's service finder) */
+  .finder-section{ padding:0 6vw; margin-top:-36px; position:relative; z-index:2; }
+  .finder-card{
+    max-width:1000px; margin:0 auto; background:#fff; border-radius:16px;
+    padding:28px 30px; box-shadow:0 12px 32px rgba(0,0,0,.12); border:1px solid #eee;
+  }
+  .finder-title{ font-size:18px; font-weight:800; margin-bottom:20px; color:#1a1a1a; }
+  .finder-grid{ display:flex; gap:36px; flex-wrap:wrap; }
+  .finder-services{ flex:1.4; min-width:260px; display:grid; grid-template-columns:1fr 1fr; gap:12px 20px; }
+  .finder-radio{ display:flex; align-items:center; gap:10px; font-size:14px; cursor:pointer; }
+  .finder-radio input{ display:none; }
+  .finder-radio-dot{
+    width:18px; height:18px; min-width:18px; border-radius:50%; border:2px solid var(--tan-border);
+    position:relative;
+  }
+  .finder-radio input:checked + .finder-radio-dot{ border-color:var(--maroon); }
+  .finder-radio input:checked + .finder-radio-dot::after{
+    content:''; position:absolute; inset:3px; border-radius:50%; background:var(--maroon);
+  }
+  .finder-location{ flex:1; min-width:220px; display:flex; flex-direction:column; gap:10px; }
+  .finder-search-btn{ margin-top:4px; width:100%; }
+
+  @media (max-width:700px){
+    .finder-section{ margin-top:20px; }
+    .finder-services{ grid-template-columns:1fr; }
+  }
+
   .home-map-section{ max-width:1100px; margin:0 auto; padding:44px 6vw 10px; }
+
   .home-map-header{
     display:flex; align-items:flex-end; justify-content:space-between; gap:20px;
     margin-bottom:16px; flex-wrap:wrap;
@@ -466,6 +494,41 @@
         </svg>
       </div>
     </div>
+
+    <section class="finder-section">
+      <div class="finder-card">
+        <div class="finder-title" id="finder-title"></div>
+        <div class="finder-grid">
+          <div class="finder-services">
+            <label class="finder-radio">
+              <input type="radio" name="finderService" value="klinik" checked onchange="setFinderService('klinik')">
+              <span class="finder-radio-dot"></span>
+              <span id="finder-svc1"></span>
+            </label>
+            <label class="finder-radio">
+              <input type="radio" name="finderService" value="moh" onchange="setFinderService('moh')">
+              <span class="finder-radio-dot"></span>
+              <span id="finder-svc2"></span>
+            </label>
+            <label class="finder-radio">
+              <input type="radio" name="finderService" value="socso" onchange="setFinderService('socso')">
+              <span class="finder-radio-dot"></span>
+              <span id="finder-svc3"></span>
+            </label>
+            <label class="finder-radio">
+              <input type="radio" name="finderService" value="peka" onchange="setFinderService('peka')">
+              <span class="finder-radio-dot"></span>
+              <span id="finder-svc4"></span>
+            </label>
+          </div>
+          <div class="finder-location">
+            <label class="field-label" id="finder-loc-label"></label>
+            <select class="input" id="finderState"></select>
+            <button class="btn finder-search-btn" onclick="searchFromFinder()" id="finder-btn"></button>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <section class="home-map-section">
       <div class="home-map-header">
@@ -821,6 +884,14 @@
     'home-p':        { en:'Free 2-minute assessment helping Malaysians aged 40+ find the leading health risk in their profile — and the screening they already qualify for, at zero cost.',
                         bm:'Penilaian percuma 2 minit membantu rakyat Malaysia berumur 40+ mengetahui risiko kesihatan utama mereka — dan saringan yang mereka layak dapat secara percuma.' },
     'home-cta':      { en:'Check My Risk  →',   bm:'Semak Risiko Saya  →' },
+
+    'finder-title':  { en:'Find a Health Service', bm:'Cari Perkhidmatan Kesihatan' },
+    'finder-svc1':   { en:'Health Screening',    bm:'Saringan Kesihatan' },
+    'finder-svc2':   { en:'Quit-Smoking Support', bm:'Sokongan Berhenti Merokok' },
+    'finder-svc3':   { en:'SOCSO Screening',     bm:'Saringan PERKESO' },
+    'finder-svc4':   { en:'PeKa B40',            bm:'PeKa B40' },
+    'finder-loc-label':{ en:'State',             bm:'Negeri' },
+    'finder-btn':    { en:'Search  →',           bm:'Cari  →' },
 
     'hm-eyebrow':    { en:'INTERACTIVE MAP',     bm:'PETA INTERAKTIF' },
     'hm-title':      { en:'Find Nearby Clinics', bm:'Cari Klinik Berdekatan' },
@@ -1508,6 +1579,7 @@
     buildSelect(document.getElementById('lastCheck'), lastCheckOptions, document.getElementById('lastCheck').value);
     buildSelect(document.getElementById('householdBand'), householdBandOptions, document.getElementById('householdBand').value);
     buildSelect(document.getElementById('clinicState'), stateList, document.getElementById('clinicState').value || 'Selangor');
+    buildSelect(document.getElementById('finderState'), stateList, document.getElementById('finderState').value || 'Selangor');
 
     document.getElementById('langEN').classList.toggle('active', currentLang === 'en');
     document.getElementById('langBM').classList.toggle('active', currentLang === 'bm');
@@ -1563,6 +1635,22 @@
       document.getElementById('clinicState').value = 'Selangor';
       label.textContent = original;
     }, 700);
+  }
+
+  /* homepage: "Find a Health Service" card -> jumps to the right tab with state pre-filled */
+  let finderService = 'klinik';
+  function setFinderService(val){ finderService = val; }
+  function searchFromFinder(){
+    const stateName = document.getElementById('finderState').value || 'Selangor';
+    if(finderService === 'klinik' || finderService === 'moh'){
+      document.getElementById('clinicState').value = stateName;
+      setClinicMode(finderService);
+      showTab('clinics');
+    } else {
+      // SOCSO / PeKa B40 are portal-based programmes, not physical clinic search —
+      // send the person to My Plan where those two schemes' details live.
+      showTab('plan');
+    }
   }
 
   /* homepage: stat cards + DOSM callout, computed from real data already loaded */
@@ -1649,6 +1737,7 @@
   buildSelect(document.getElementById('lastCheck'), lastCheckOptions);
   buildSelect(document.getElementById('householdBand'), householdBandOptions);
   buildSelect(document.getElementById('clinicState'), stateList, 'Selangor');
+  buildSelect(document.getElementById('finderState'), stateList, 'Selangor');
   loadForm();
   applyLang();
   initHomeMap();
