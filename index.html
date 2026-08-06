@@ -75,7 +75,9 @@
 
   /* ---------- home page ---------- */
   .hero-banner{
-    background:linear-gradient(135deg, var(--maroon) 0%, #1F4166 55%, #142c46 100%);
+    background-image:linear-gradient(135deg, rgba(46,92,138,.94) 0%, rgba(31,65,102,.92) 55%, rgba(20,44,70,.94) 100%), url('https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1800&q=75');
+    background-size:cover;
+    background-position:center;
     padding:80px 6vw;
     position:relative;
     overflow:hidden;
@@ -270,6 +272,26 @@
   .feature-card p{ font-size:13.5px; color:var(--text-mid); line-height:1.55; margin:0; }
   .site-footer{ text-align:center; padding:40px 6vw 60px; border-top:1px solid #eee; }
   .site-footer p{ font-size:12px; color:var(--text-light); margin:8px 0 0; }
+
+  .medical-disclaimer{
+    background:#fff8e8; border:1px solid #ead7a4; border-left:5px solid #c4942f;
+    border-radius:12px; padding:16px 18px; margin:0 0 24px;
+    font-size:13px; line-height:1.6; color:#5d4a1f;
+  }
+  .medical-disclaimer strong{ color:#3f3217; }
+  .footer-disclaimer{ max-width:760px; margin:14px auto 0; font-size:11.5px; line-height:1.55; color:var(--text-light); }
+  .state-location-row{ display:grid; grid-template-columns:minmax(0,1fr) 46px; gap:8px; align-items:stretch; }
+  .state-location-row select.input{ background-position:right 14px center; }
+  .location-field-btn{
+    border:1.5px solid var(--tan-border); border-radius:8px; background:#fffdf9; color:var(--maroon);
+    font-size:20px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+  .location-field-btn:hover{ background:var(--maroon-bg); border-color:var(--maroon); }
+  .location-field-btn:focus-visible{ outline:3px solid rgba(46,92,138,.25); outline-offset:2px; }
+  .user-location-pulse{
+    width:18px; height:18px; border-radius:50%; background:#2E5C8A; border:3px solid #fff;
+    box-shadow:0 0 0 3px rgba(46,92,138,.35),0 0 0 9px rgba(46,92,138,.15);
+  }
 
   /* ---------- Check My Risk page ---------- */
   .card-block{ background:var(--card-bg); border-radius:14px; padding:34px; }
@@ -602,6 +624,7 @@
     <footer class="site-footer">
       <div class="topnav-brand" style="font-size:18px;">SaringKu</div>
       <p id="footer-p"></p>
+      <div class="footer-disclaimer" id="footer-disclaimer"></div>
     </footer>
   </section>
 
@@ -613,6 +636,7 @@
         <div class="page-eyebrow" id="p-eyebrow"></div>
         <h2 class="page-title" id="p-title"></h2>
         <p class="page-sub" id="p-sub"></p>
+        <div class="medical-disclaimer"><strong id="medical-note-title"></strong> <span id="medical-note-text"></span></div>
         <div class="card-block">
           <div class="form-grid">
             <div>
@@ -625,9 +649,9 @@
             </div>
             <div>
               <label class="field-label" id="p-state-label"></label>
-              <div class="input-icon-wrap">
+              <div class="state-location-row">
                 <select class="input" id="state"></select>
-                <span class="icon locate-icon" id="locateIcon" onclick="simulateLocate()">◎</span>
+                <button type="button" class="location-field-btn" id="locateIcon" onclick="simulateLocate()" aria-label="Use my current location" title="Use my current location">◎</button>
               </div>
             </div>
             <div>
@@ -659,6 +683,7 @@
         <div class="bar rec" id="h-bar-rec"></div>
         <div class="bar-caption muted" id="h-rec"></div>
         <div class="bar-caption muted" id="h-free"></div>
+        <div class="medical-disclaimer" style="margin-top:20px;"><strong id="result-medical-note-title"></strong> <span id="result-medical-note-text"></span></div>
         <button class="btn" style="width:100%;" id="h-btn" onclick="showTab('plan')"></button>
         <div class="back-link" style="text-align:center;margin-top:16px;" onclick="editRiskAnswers()" id="h-edit-link"></div>
       </div>
@@ -1415,14 +1440,41 @@
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:18 }).addTo(mainMap);
   }
 
+  function requestLocationConsent(onSuccess){
+    const message = currentLang === 'en'
+      ? 'SaringKu would like to use your current location to centre the map and suggest nearby clinics. Your coordinates are used only in this browser session and are not saved. Continue?'
+      : 'SaringKu ingin menggunakan lokasi semasa anda untuk memusatkan peta dan mencadangkan klinik berdekatan. Koordinat anda hanya digunakan dalam sesi pelayar ini dan tidak disimpan. Teruskan?';
+    if(!window.confirm(message)) return;
+    if(!navigator.geolocation){
+      alert(currentLang === 'en' ? 'Location services are not supported by this browser.' : 'Perkhidmatan lokasi tidak disokong oleh pelayar ini.');
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      pos => onSuccess(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy),
+      () => alert(currentLang === 'en' ? 'We could not access your location. Please allow location permission in your browser settings or choose your state manually.' : 'Kami tidak dapat mengakses lokasi anda. Sila benarkan kebenaran lokasi dalam tetapan pelayar atau pilih negeri secara manual.'),
+      { enableHighAccuracy:true, timeout:10000, maximumAge:60000 }
+    );
+  }
+
+  function nearestStateName(lat,lng){
+    let best='Selangor', bestD=Infinity;
+    Object.entries(stateData).forEach(([name,v])=>{
+      const d=(v.lat-lat)**2+(v.lng-lng)**2;
+      if(d<bestD){ bestD=d; best=name; }
+    });
+    return best;
+  }
+
   function simulateLocate(){
     const icon = document.getElementById('locateIcon');
     icon.textContent = '…';
-    setTimeout(()=>{
-      document.getElementById('state').value = 'Selangor';
+    requestLocationConsent((lat,lng)=>{
+      const stateName = nearestStateName(lat,lng);
+      document.getElementById('state').value = stateName;
       icon.textContent = '✓';
-      setTimeout(()=>{ icon.textContent = '◎'; }, 1200);
-    }, 700);
+      setTimeout(()=>{ icon.textContent = '◎'; }, 1400);
+    });
+    setTimeout(()=>{ if(icon.textContent==='…') icon.textContent='◎'; },11000);
   }
 
   /* ================= tab navigation ================= */
@@ -1618,6 +1670,8 @@
   /* homepage: interactive map showing every demo clinic across all 16 states */
   let homeMap = null;
   let homeMapMarkers = [];
+  let homeUserMarker = null;
+  let homeAccuracyCircle = null;
   let homeMapInited = false;
 
   function initHomeMap(){
@@ -1646,16 +1700,31 @@
 
   /* "Get My Location" — demo only, no real GPS yet. Recentres the home map on Selangor
      (the app's default reference area) and hands off to the Find a Clinic tab if clicked again. */
+  function showUserLocationOnHomeMap(lat,lng,accuracy){
+    if(!homeMap) initHomeMap();
+    if(homeUserMarker) homeMap.removeLayer(homeUserMarker);
+    if(homeAccuracyCircle) homeMap.removeLayer(homeAccuracyCircle);
+    const icon = L.divIcon({ className:'', html:'<div class="user-location-pulse"></div>', iconSize:[18,18], iconAnchor:[9,9] });
+    homeUserMarker = L.marker([lat,lng], {icon, zIndexOffset:1000}).addTo(homeMap)
+      .bindPopup(currentLang==='en' ? '<strong>You are here</strong><br>Your approximate current location.' : '<strong>Anda berada di sini</strong><br>Lokasi semasa anggaran anda.');
+    if(Number.isFinite(accuracy)) homeAccuracyCircle = L.circle([lat,lng], {radius:accuracy, weight:1, fillOpacity:.08}).addTo(homeMap);
+    homeMap.setView([lat,lng], 13);
+    homeUserMarker.openPopup();
+  }
+
   function getMyLocation(){
     const label = document.getElementById('hm-locate-label');
     const original = label.textContent;
-    label.textContent = currentLang === 'en' ? 'Locating…' : 'Mencari lokasi…';
-    setTimeout(()=>{
-      const s = stateData['Selangor'];
-      if(homeMap) homeMap.setView([s.lat, s.lng], 11);
-      document.getElementById('clinicState').value = 'Selangor';
-      label.textContent = original;
-    }, 700);
+    label.textContent = currentLang === 'en' ? 'Waiting for permission…' : 'Menunggu kebenaran…';
+    requestLocationConsent((lat,lng,accuracy)=>{
+      showUserLocationOnHomeMap(lat,lng,accuracy);
+      const stateName = nearestStateName(lat,lng);
+      document.getElementById('clinicState').value = stateName;
+      document.getElementById('finderState').value = stateName;
+      label.textContent = currentLang === 'en' ? 'You are here' : 'Anda di sini';
+      setTimeout(()=>{ label.textContent = original; },2200);
+    });
+    setTimeout(()=>{ if(label.textContent.includes('permission') || label.textContent.includes('kebenaran')) label.textContent=original; },11000);
   }
 
   /* homepage: "Find a Health Service" card -> jumps to the right tab with state pre-filled */
@@ -1679,12 +1748,15 @@
   function useMyLocationInFinder(){
     const label = document.getElementById('finder-locate-label');
     const original = label.textContent;
-    label.textContent = currentLang === 'en' ? 'Locating…' : 'Mencari lokasi…';
-    setTimeout(()=>{
-      document.getElementById('finderState').value = 'Selangor';
-      label.textContent = currentLang === 'en' ? '✓ Selangor (near you)' : '✓ Selangor (berdekatan)';
-      setTimeout(()=>{ label.textContent = original; }, 1800);
-    }, 700);
+    label.textContent = currentLang === 'en' ? 'Waiting for permission…' : 'Menunggu kebenaran…';
+    requestLocationConsent((lat,lng,accuracy)=>{
+      const stateName = nearestStateName(lat,lng);
+      document.getElementById('finderState').value = stateName;
+      showUserLocationOnHomeMap(lat,lng,accuracy);
+      label.textContent = currentLang === 'en' ? `✓ ${stateName} (near you)` : `✓ ${stateName} (berdekatan)`;
+      setTimeout(()=>{ label.textContent = original; },2200);
+    });
+    setTimeout(()=>{ if(label.textContent.includes('permission') || label.textContent.includes('kebenaran')) label.textContent=original; },11000);
   }
 
   /* homepage dashboard: prototype figures shown for presentation/demo purposes */
