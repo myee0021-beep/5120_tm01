@@ -161,7 +161,7 @@
   }
   .finder-title{ font-size:18px; font-weight:800; margin-bottom:20px; color:#1a1a1a; }
   .finder-grid{ display:flex; gap:36px; flex-wrap:wrap; }
-  .finder-services{ flex:1.4; min-width:260px; display:grid; grid-template-columns:1fr 1fr; gap:12px 20px; }
+  .finder-services{ flex:1; min-width:240px; display:grid; grid-template-columns:1fr 1fr; gap:12px 20px; }
   .finder-radio{ display:flex; align-items:center; gap:10px; font-size:14px; cursor:pointer; }
   .finder-radio input{ display:none; }
   .finder-radio-dot{
@@ -172,15 +172,25 @@
   .finder-radio input:checked + .finder-radio-dot::after{
     content:''; position:absolute; inset:3px; border-radius:50%; background:var(--maroon);
   }
-  .finder-location{ flex:1; min-width:220px; display:flex; flex-direction:column; gap:10px; }
-  .finder-search-btn{ margin-top:4px; width:100%; }
+  .finder-location{
+    flex:1.3; min-width:260px; display:flex; flex-direction:column; gap:12px;
+    background:var(--maroon-bg); border-radius:12px; padding:20px 22px;
+  }
+  .finder-location .field-label{ font-size:12px; }
+  .finder-location select.input{ padding:14px 16px; font-size:16px; }
+  .finder-locate-btn{
+    background:none; border:1.5px dashed var(--maroon); color:var(--maroon);
+    padding:10px 14px; border-radius:8px; font-size:13.5px; font-weight:600; cursor:pointer;
+  }
+  .finder-locate-btn:hover{ background:rgba(46,92,138,.06); }
+  .finder-search-btn{ margin-top:2px; width:100%; padding:15px; font-size:16px; }
 
   @media (max-width:700px){
     .finder-section{ margin-top:20px; }
     .finder-services{ grid-template-columns:1fr; }
   }
 
-  .home-map-section{ max-width:1100px; margin:0 auto; padding:44px 6vw 10px; }
+  .home-map-section{ max-width:760px; margin:0 auto; padding:44px 6vw 10px; }
 
   .home-map-header{
     display:flex; align-items:flex-end; justify-content:space-between; gap:20px;
@@ -524,6 +534,7 @@
           <div class="finder-location">
             <label class="field-label" id="finder-loc-label"></label>
             <select class="input" id="finderState"></select>
+            <button class="finder-locate-btn" onclick="useMyLocationInFinder()">📍 <span id="finder-locate-label"></span></button>
             <button class="btn finder-search-btn" onclick="searchFromFinder()" id="finder-btn"></button>
           </div>
         </div>
@@ -539,7 +550,7 @@
         </div>
         <button class="btn" onclick="getMyLocation()" id="hm-locate-btn" style="white-space:nowrap;">📍 <span id="hm-locate-label"></span></button>
       </div>
-      <div class="map-wrap-full" style="height:380px;"><div id="map-home" style="height:100%;width:100%;"></div></div>
+      <div class="map-wrap-full" style="height:280px;"><div id="map-home" style="height:100%;width:100%;"></div></div>
       <div class="home-map-legend">
         <span><span class="legend-dot green"></span><span id="hm-legend1"></span></span>
         <span><span class="legend-dot amber"></span><span id="hm-legend2"></span></span>
@@ -892,6 +903,7 @@
     'finder-svc4':   { en:'PeKa B40',            bm:'PeKa B40' },
     'finder-loc-label':{ en:'State',             bm:'Negeri' },
     'finder-btn':    { en:'Search  →',           bm:'Cari  →' },
+    'finder-locate-label':{ en:'Use my current location', bm:'Guna lokasi semasa saya' },
 
     'hm-eyebrow':    { en:'INTERACTIVE MAP',     bm:'PETA INTERAKTIF' },
     'hm-title':      { en:'Find Nearby Clinics', bm:'Cari Klinik Berdekatan' },
@@ -1651,6 +1663,19 @@
       // send the person to My Plan where those two schemes' details live.
       showTab('plan');
     }
+  }
+
+  /* "Use my current location" — demo only, same simulated approach as the map's
+     Get My Location button (no real GPS yet). Fills the finder's state field. */
+  function useMyLocationInFinder(){
+    const label = document.getElementById('finder-locate-label');
+    const original = label.textContent;
+    label.textContent = currentLang === 'en' ? 'Locating…' : 'Mencari lokasi…';
+    setTimeout(()=>{
+      document.getElementById('finderState').value = 'Selangor';
+      label.textContent = currentLang === 'en' ? '✓ Selangor (near you)' : '✓ Selangor (berdekatan)';
+      setTimeout(()=>{ label.textContent = original; }, 1800);
+    }, 700);
   }
 
   /* homepage: stat cards + DOSM callout, computed from real data already loaded */
