@@ -153,12 +153,14 @@
   .home-callout{ padding:10px 6vw 50px; }
   .home-callout-inner{
     max-width:720px; margin:0 auto;
-    background:linear-gradient(135deg, var(--maroon) 0%, #1F4166 100%);
+    background:var(--maroon-bg);
+    border:1px solid #d5e0ec;
+    border-left:5px solid var(--maroon);
     border-radius:14px; padding:32px 36px; text-align:center;
   }
-  .home-callout-eyebrow{ font-size:11px; font-weight:700; letter-spacing:.06em; color:#f3e6c9; margin-bottom:10px; }
-  .home-callout-text{ font-size:18px; color:#fff; line-height:1.5; font-weight:600; }
-  .home-callout-source{ font-size:11px; color:#cfd9e6; margin-top:12px; }
+  .home-callout-eyebrow{ font-size:11px; font-weight:700; letter-spacing:.06em; color:var(--maroon); margin-bottom:10px; }
+  .home-callout-text{ font-size:18px; color:#1a2d40; line-height:1.5; font-weight:600; }
+  .home-callout-source{ font-size:11px; color:var(--text-mid); margin-top:12px; }
 
   /* how it works */
   .how-it-works{ padding:20px 6vw 60px; text-align:center; }
@@ -217,6 +219,29 @@
   /* ---------- Check My Risk page ---------- */
   .card-block{ background:var(--card-bg); border-radius:14px; padding:34px; }
   .page-eyebrow{ font-size:11px; font-weight:700; letter-spacing:.06em; color:var(--text-light); margin-bottom:8px; text-transform:uppercase; }
+
+  /* guide accordion */
+  .guide-card{ background:#fff; border:1px solid #eee; border-radius:14px; padding:8px 22px 14px; box-shadow:0 1px 3px rgba(0,0,0,.04); }
+  .guide-card-label{ font-size:11px; font-weight:700; letter-spacing:.05em; color:var(--text-light); padding-top:16px; border-bottom:1px solid #eee; padding-bottom:12px; }
+  .accordion-item{ border-bottom:1px solid #eee; }
+  .accordion-item:last-child{ border-bottom:none; }
+  .accordion-head{
+    width:100%; background:none; border:none; cursor:pointer;
+    display:flex; align-items:center; gap:14px; padding:16px 4px;
+    font-family:inherit; text-align:left;
+  }
+  .accordion-num{
+    width:28px; height:28px; min-width:28px; border-radius:50%; background:var(--maroon-bg); color:var(--maroon);
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px;
+  }
+  .accordion-title{ flex:1; font-size:14.5px; font-weight:700; color:var(--maroon); }
+  .accordion-chev{ color:var(--maroon); font-size:18px; transition:transform .2s; }
+  .accordion-item.open .accordion-chev{ transform:rotate(90deg); }
+  .accordion-item.open .accordion-head{ background:var(--maroon-bg); border-radius:10px; }
+  .accordion-body{ max-height:0; overflow:hidden; transition:max-height .25s ease; }
+  .accordion-item.open .accordion-body{ max-height:200px; }
+  .accordion-body p{ font-size:13.5px; color:var(--text-mid); line-height:1.6; margin:0; padding:4px 4px 16px 46px; }
+
   h2.page-title{ font-size:26px; margin:0 0 6px; }
   .page-sub{ font-size:13.5px; color:var(--text-light); margin:0 0 26px; }
   .form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:18px 20px; }
@@ -374,6 +399,7 @@
     <button class="tab-btn" data-tab="risk" onclick="showTab('risk')" id="navRisk"></button>
     <button class="tab-btn" data-tab="clinics" onclick="showTab('clinics')" id="navClinics"></button>
     <button class="tab-btn" data-tab="plan" onclick="showTab('plan')" id="navPlan"></button>
+    <button class="tab-btn" data-tab="guide" onclick="showTab('guide')" id="navGuide"></button>
     <button class="tab-btn" data-tab="settings" onclick="showTab('settings')" id="navSettings"></button>
   </div>
   <span class="lang-toggle" id="langToggle">
@@ -614,6 +640,59 @@
     </div>
   </section>
 
+  <!-- PAGE: GUIDE -->
+  <section class="page" id="page-guide">
+    <div class="container-narrow" style="max-width:720px;">
+      <div class="page-eyebrow" id="guide-eyebrow"></div>
+      <h2 class="page-title" id="guide-title"></h2>
+      <p class="page-sub" id="guide-sub"></p>
+
+      <div class="guide-card">
+        <div class="guide-card-label" id="guide-covered-label"></div>
+        <div class="accordion-item">
+          <button class="accordion-head" onclick="toggleAccordion(this)">
+            <span class="accordion-num">1</span>
+            <span class="accordion-title" id="guide1-title"></span>
+            <span class="accordion-chev">›</span>
+          </button>
+          <div class="accordion-body"><p id="guide1-body"></p></div>
+        </div>
+        <div class="accordion-item">
+          <button class="accordion-head" onclick="toggleAccordion(this)">
+            <span class="accordion-num">2</span>
+            <span class="accordion-title" id="guide2-title"></span>
+            <span class="accordion-chev">›</span>
+          </button>
+          <div class="accordion-body"><p id="guide2-body"></p></div>
+        </div>
+        <div class="accordion-item">
+          <button class="accordion-head" onclick="toggleAccordion(this)">
+            <span class="accordion-num">3</span>
+            <span class="accordion-title" id="guide3-title"></span>
+            <span class="accordion-chev">›</span>
+          </button>
+          <div class="accordion-body"><p id="guide3-body"></p></div>
+        </div>
+        <div class="accordion-item">
+          <button class="accordion-head" onclick="toggleAccordion(this)">
+            <span class="accordion-num">4</span>
+            <span class="accordion-title" id="guide4-title"></span>
+            <span class="accordion-chev">›</span>
+          </button>
+          <div class="accordion-body"><p id="guide4-body"></p></div>
+        </div>
+        <div class="accordion-item">
+          <button class="accordion-head" onclick="toggleAccordion(this)">
+            <span class="accordion-num">5</span>
+            <span class="accordion-title" id="guide5-title"></span>
+            <span class="accordion-chev">›</span>
+          </button>
+          <div class="accordion-body"><p id="guide5-body"></p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- PAGE: SETTINGS -->
   <section class="page" id="page-settings">
     <div class="container-narrow" style="max-width:640px;">
@@ -687,7 +766,29 @@
     'navRisk':       { en:'Check My Risk',      bm:'Semak Risiko' },
     'navClinics':    { en:'Find a Clinic',      bm:'Cari Klinik' },
     'navPlan':       { en:'My Plan',            bm:'Pelan Saya' },
+    'navGuide':      { en:'Guide',              bm:'Panduan' },
     'navSettings':   { en:'Settings',           bm:'Tetapan' },
+
+    'guide-eyebrow': { en:'HELP & SUPPORT',      bm:'BANTUAN & SOKONGAN' },
+    'guide-title':   { en:'How to Use SaringKu', bm:'Cara Menggunakan SaringKu' },
+    'guide-sub':     { en:'A step-by-step guide to every feature.', bm:'Panduan langkah demi langkah untuk setiap ciri.' },
+    'guide-covered-label':{ en:"WHAT'S COVERED", bm:'APA YANG DILIPUTI' },
+    'guide1-title':  { en:'Checking Your Risk',  bm:'Menyemak Risiko Anda' },
+    'guide1-body':   { en:'Go to Check My Risk and answer 5 quick questions — age, sex, state, smoking, and last check-up. Takes about 2 minutes and uses real DOSM mortality data to show your leading health risk.',
+                        bm:'Pergi ke Semak Risiko Saya dan jawab 5 soalan ringkas — umur, jantina, negeri, tabiat merokok, dan pemeriksaan terakhir. Mengambil masa lebih kurang 2 minit dan menggunakan data kematian DOSM sebenar.' },
+    'guide2-title':  { en:'Finding a Clinic',    bm:'Mencari Klinik' },
+    'guide2-body':   { en:'Use the map on the homepage or the Find a Clinic tab. Pick a state to see nearby clinics, switch between Klinik Kesihatan and MOH quit-smoking support, and click a marker or card for details.',
+                        bm:'Gunakan peta di laman utama atau tab Cari Klinik. Pilih negeri untuk melihat klinik berdekatan, tukar antara Klinik Kesihatan dan sokongan berhenti merokok KKM.' },
+    'guide3-title':  { en:'Understanding Your Plan', bm:'Memahami Pelan Anda' },
+    'guide3-body':   { en:'After Check My Risk, go to My Plan to see which government programmes you qualify for — SOCSO, PeKa B40, Klinik Kesihatan, and mQuit — based on your actual answers, not guesswork.',
+                        bm:'Selepas Semak Risiko Saya, pergi ke Pelan Saya untuk melihat program kerajaan yang anda layak dapat — PERKESO, PeKa B40, Klinik Kesihatan, dan mQuit — berdasarkan jawapan sebenar anda.' },
+    'guide4-title':  { en:'Notifications & Settings', bm:'Pemberitahuan & Tetapan' },
+    'guide4-body':   { en:'In Settings you can toggle alerts for doctor changes, new doctors, and target-date reminders. Note: this is a demo feature and is not yet connected to a live notification system.',
+                        bm:'Dalam Tetapan anda boleh menghidupkan makluman perpindahan doktor, doktor baharu, dan peringatan tarikh sasaran. Nota: ini adalah ciri demo dan belum disambungkan ke sistem pemberitahuan sebenar.' },
+    'guide5-title':  { en:'Switching Language',  bm:'Menukar Bahasa' },
+    'guide5-body':   { en:'Use the EN | BM switch in the top-right corner at any time — every page, form, and result updates instantly.',
+                        bm:'Gunakan suis EN | BM di penjuru kanan atas pada bila-bila masa — setiap halaman, borang, dan keputusan dikemas kini serta-merta.' },
+
 
     'home-badge':    { en:'● LIVE MALAYSIA HEALTH SCREENING', bm:'● SARINGAN KESIHATAN MALAYSIA' },
     'home-h1':       { en:'Your Health Guardian.', bm:'Penjaga Kesihatan Anda.' },
@@ -1214,6 +1315,14 @@
   }
 
   /* ================= tab navigation ================= */
+  /* guide page: accordion toggle (single-open, click again to close) */
+  function toggleAccordion(btn){
+    const item = btn.closest('.accordion-item');
+    const wasOpen = item.classList.contains('open');
+    item.parentElement.querySelectorAll('.accordion-item').forEach(i => i.classList.remove('open'));
+    if(!wasOpen) item.classList.add('open');
+  }
+
   function showTab(name){
     currentTab = name;
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
