@@ -126,6 +126,62 @@
     cursor:pointer;
   }
   .features{ display:flex; gap:28px; justify-content:center; padding:10px 6vw 70px; flex-wrap:wrap; }
+
+  /* home search bar */
+  .home-search{ background:var(--card-bg); padding:22px 6vw; }
+  .home-search-inner{ max-width:640px; margin:0 auto; display:flex; gap:14px; align-items:flex-end; flex-wrap:wrap; }
+  .home-search-field{ flex:1; min-width:200px; }
+
+  /* stat row */
+  .stat-row{ display:flex; gap:24px; justify-content:center; padding:50px 6vw 20px; flex-wrap:wrap; }
+  .stat-card{ background:var(--card-bg); border-radius:12px; padding:26px 34px; text-align:center; min-width:150px; }
+  .stat-num{ font-size:32px; font-weight:800; margin-bottom:4px; }
+  .stat-label{ font-size:12px; color:var(--text-mid); }
+
+  /* DOSM callout */
+  .home-callout{ padding:10px 6vw 50px; }
+  .home-callout-inner{
+    max-width:720px; margin:0 auto;
+    background:linear-gradient(135deg, var(--maroon) 0%, #1F4166 100%);
+    border-radius:14px; padding:32px 36px; text-align:center;
+  }
+  .home-callout-eyebrow{ font-size:11px; font-weight:700; letter-spacing:.06em; color:#f3e6c9; margin-bottom:10px; }
+  .home-callout-text{ font-size:18px; color:#fff; line-height:1.5; font-weight:600; }
+  .home-callout-source{ font-size:11px; color:#cfd9e6; margin-top:12px; }
+
+  /* how it works */
+  .how-it-works{ padding:20px 6vw 60px; text-align:center; }
+  .section-title{ font-size:26px; margin:0 0 34px; }
+  .how-steps{ display:flex; gap:32px; justify-content:center; flex-wrap:wrap; max-width:900px; margin:0 auto; }
+  .how-step{ flex:1; min-width:200px; max-width:260px; }
+  .how-step-num{
+    width:36px; height:36px; border-radius:50%; background:var(--maroon); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-weight:800; margin:0 auto 14px;
+  }
+  .how-step h3{ font-size:15.5px; margin:0 0 8px; }
+  .how-step p{ font-size:13px; color:var(--text-mid); line-height:1.55; margin:0; }
+
+  /* settings page */
+  .settings-card{ background:var(--card-bg); border-radius:14px; padding:6px 26px; }
+  .settings-row{
+    display:flex; align-items:center; justify-content:space-between; gap:20px;
+    padding:20px 0; border-bottom:1px solid #e2ddd2;
+  }
+  .settings-row:last-child{ border-bottom:none; }
+  .settings-row-title{ font-size:14.5px; font-weight:700; margin-bottom:4px; }
+  .settings-row-desc{ font-size:12.5px; color:var(--text-mid); line-height:1.5; }
+  .switch{ position:relative; display:inline-block; width:44px; height:26px; flex-shrink:0; }
+  .switch input{ opacity:0; width:0; height:0; }
+  .switch-track{
+    position:absolute; cursor:pointer; inset:0; background:#ccc; border-radius:999px; transition:.2s;
+  }
+  .switch-track::before{
+    content:''; position:absolute; height:20px; width:20px; left:3px; bottom:3px;
+    background:#fff; border-radius:50%; transition:.2s;
+  }
+  .switch input:checked + .switch-track{ background:var(--maroon); }
+  .switch input:checked + .switch-track::before{ transform:translateX(18px); }
+  .settings-note{ font-size:12px; color:var(--text-light); font-style:italic; margin-top:18px; text-align:center; }
   .feature-card{ max-width:280px; text-align:center; }
   .feature-icon{ font-size:32px; margin-bottom:10px; }
   .feature-card h3{ font-size:16px; margin:0 0 8px; }
@@ -281,6 +337,7 @@
     <button class="tab-btn" data-tab="risk" onclick="showTab('risk')" id="navRisk"></button>
     <button class="tab-btn" data-tab="clinics" onclick="showTab('clinics')" id="navClinics"></button>
     <button class="tab-btn" data-tab="plan" onclick="showTab('plan')" id="navPlan"></button>
+    <button class="tab-btn" data-tab="settings" onclick="showTab('settings')" id="navSettings"></button>
   </div>
   <span class="lang-toggle" id="langToggle">
     <span id="langEN" onclick="setLang('en')">EN</span>|<span id="langBM" onclick="setLang('bm')">BM</span>
@@ -299,6 +356,60 @@
         <button class="btn" onclick="showTab('risk')" id="home-cta"></button>
       </div>
     </div>
+
+    <div class="home-search">
+      <div class="home-search-inner">
+        <div class="home-search-field">
+          <label class="field-label" id="hs-label"></label>
+          <select class="input" id="homeSearchState"></select>
+        </div>
+        <button class="btn" onclick="searchFromHome()" id="hs-btn" style="white-space:nowrap;"></button>
+      </div>
+    </div>
+
+    <section class="stat-row">
+      <div class="stat-card">
+        <div class="stat-num" style="color:var(--maroon);" id="stat-num1"></div>
+        <div class="stat-label" id="stat-label1"></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" style="color:var(--green);" id="stat-num2"></div>
+        <div class="stat-label" id="stat-label2"></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" style="color:#c9a84c;" id="stat-num3"></div>
+        <div class="stat-label" id="stat-label3"></div>
+      </div>
+    </section>
+
+    <div class="home-callout">
+      <div class="home-callout-inner">
+        <div class="home-callout-eyebrow" id="callout-eyebrow"></div>
+        <div class="home-callout-text" id="callout-text"></div>
+        <div class="home-callout-source">DOSM, Statistics on Causes of Death, Malaysia 2025</div>
+      </div>
+    </div>
+
+    <section class="how-it-works">
+      <h2 class="section-title" id="how-title"></h2>
+      <div class="how-steps">
+        <div class="how-step">
+          <div class="how-step-num">1</div>
+          <h3 id="how1-h"></h3>
+          <p id="how1-p"></p>
+        </div>
+        <div class="how-step">
+          <div class="how-step-num">2</div>
+          <h3 id="how2-h"></h3>
+          <p id="how2-p"></p>
+        </div>
+        <div class="how-step">
+          <div class="how-step-num">3</div>
+          <h3 id="how3-h"></h3>
+          <p id="how3-p"></p>
+        </div>
+      </div>
+    </section>
 
     <section class="features">
       <div class="feature-card">
@@ -457,6 +568,48 @@
     </div>
   </section>
 
+  <!-- PAGE: SETTINGS -->
+  <section class="page" id="page-settings">
+    <div class="container-narrow" style="max-width:640px;">
+      <h2 class="page-title" id="set-title"></h2>
+      <p class="page-sub" id="set-sub"></p>
+
+      <div class="settings-card">
+        <div class="settings-row">
+          <div>
+            <div class="settings-row-title" id="set-toggle1-title"></div>
+            <div class="settings-row-desc" id="set-toggle1-desc"></div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="toggleDoctorChange" onchange="saveSettingsToggles()">
+            <span class="switch-track"></span>
+          </label>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-row-title" id="set-toggle2-title"></div>
+            <div class="settings-row-desc" id="set-toggle2-desc"></div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="toggleNewDoctor" onchange="saveSettingsToggles()">
+            <span class="switch-track"></span>
+          </label>
+        </div>
+        <div class="settings-row">
+          <div>
+            <div class="settings-row-title" id="set-toggle3-title"></div>
+            <div class="settings-row-desc" id="set-toggle3-desc"></div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="toggleTargetDate" onchange="saveSettingsToggles()">
+            <span class="switch-track"></span>
+          </label>
+        </div>
+      </div>
+      <p class="settings-note" id="set-note"></p>
+    </div>
+  </section>
+
 </main>
 
 <script>
@@ -466,12 +619,30 @@
     'navRisk':       { en:'Check My Risk',      bm:'Semak Risiko' },
     'navClinics':    { en:'Find a Clinic',      bm:'Cari Klinik' },
     'navPlan':       { en:'My Plan',            bm:'Pelan Saya' },
+    'navSettings':   { en:'Settings',           bm:'Tetapan' },
 
     'home-badge':    { en:'● LIVE MALAYSIA HEALTH SCREENING', bm:'● SARINGAN KESIHATAN MALAYSIA' },
     'home-h1':       { en:'Your Health Guardian.', bm:'Penjaga Kesihatan Anda.' },
     'home-p':        { en:'Free 2-minute assessment helping Malaysians aged 40+ find the leading health risk in their profile — and the screening they already qualify for, at zero cost.',
                         bm:'Penilaian percuma 2 minit membantu rakyat Malaysia berumur 40+ mengetahui risiko kesihatan utama mereka — dan saringan yang mereka layak dapat secara percuma.' },
     'home-cta':      { en:'Check My Risk  →',   bm:'Semak Risiko Saya  →' },
+
+    'hs-label':      { en:'Search by service, in your state', bm:'Cari mengikut perkhidmatan, di negeri anda' },
+    'hs-btn':        { en:'Search Clinics  →',  bm:'Cari Klinik  →' },
+
+    'stat-label1':   { en:'Government Programmes', bm:'Program Kerajaan' },
+    'stat-label2':   { en:'States Covered',      bm:'Negeri Dilindungi' },
+    'stat-label3':   { en:'Recommended Age',     bm:'Umur Disyorkan' },
+
+    'callout-eyebrow':{ en:'WHY THIS MATTERS',   bm:'MENGAPA INI PENTING' },
+
+    'how-title':     { en:'How SaringKu works',  bm:'Bagaimana SaringKu berfungsi' },
+    'how1-h':        { en:'1. Answer a few questions', bm:'1. Jawab beberapa soalan' },
+    'how1-p':        { en:'Age, smoking, last check-up — takes about 2 minutes.', bm:'Umur, tabiat merokok, pemeriksaan terakhir — ambil masa lebih kurang 2 minit.' },
+    'how2-h':        { en:'2. See your real risk', bm:'2. Lihat risiko sebenar anda' },
+    'how2-p':        { en:'Based on real DOSM mortality data for your age group.', bm:'Berdasarkan data kematian DOSM sebenar untuk kumpulan umur anda.' },
+    'how3-h':        { en:'3. Claim what you qualify for', bm:'3. Tuntut apa yang anda layak dapat' },
+    'how3-p':        { en:'Free or low-cost screening, matched to your profile.', bm:'Saringan percuma atau kos rendah, dipadankan dengan profil anda.' },
 
     'feat1-h':       { en:'2-Minute Assessment', bm:'Penilaian 2 Minit' },
     'feat1-p':       { en:'Answer a few quick questions about age, smoking, and check-up history.',
@@ -484,6 +655,17 @@
                         bm:'Dipadankan dengan manfaat PERKESO, Klinik Kesihatan, dan KKM yang anda layak dapat.' },
     'footer-p':      { en:'A health screening awareness prototype built for Malaysians aged 40+.',
                         bm:'Prototaip kesedaran saringan kesihatan untuk rakyat Malaysia berumur 40+.' },
+
+    'set-title':     { en:'Settings',           bm:'Tetapan' },
+    'set-sub':       { en:'Manage your notification preferences.', bm:'Urus keutamaan pemberitahuan anda.' },
+    'set-toggle1-title':{ en:'Doctor relocation alerts', bm:'Makluman perpindahan doktor' },
+    'set-toggle1-desc':{ en:'Notify me if a doctor I usually see changes clinic.', bm:'Maklumkan saya jika doktor yang biasa saya jumpa berpindah klinik.' },
+    'set-toggle2-title':{ en:'New doctor alerts', bm:'Makluman doktor baharu' },
+    'set-toggle2-desc':{ en:'Notify me when a nearby clinic adds a new doctor.', bm:'Maklumkan saya apabila klinik berdekatan menambah doktor baharu.' },
+    'set-toggle3-title':{ en:'Target date reminders', bm:'Peringatan tarikh sasaran' },
+    'set-toggle3-desc':{ en:'Remind me before my saved plan\'s target date.', bm:'Ingatkan saya sebelum tarikh sasaran pelan saya.' },
+    'set-note':      { en:'Demo feature — these toggles are saved on this device only and are not yet connected to a live notification system.',
+                        bm:'Ciri demo — suis ini hanya disimpan pada peranti ini dan belum disambungkan ke sistem pemberitahuan sebenar.' },
 
     'p-title':       { en:'Check My Risk',      bm:'Semak Risiko Saya' },
     'p-sub':         { en:'Two minutes. No account needed.', bm:'Dua minit. Tiada akaun diperlukan.' },
@@ -950,6 +1132,26 @@
     if(name === 'plan'){
       renderPlanCards();
     }
+    if(name === 'settings'){
+      loadSettingsToggles();
+    }
+  }
+
+  /* ================= settings toggles (UI-only demo, no live notification backend) ================= */
+  function loadSettingsToggles(){
+    let data = {};
+    try{ data = JSON.parse(localStorage.getItem('saringku_settings')) || {}; }catch(e){}
+    document.getElementById('toggleDoctorChange').checked = !!data.doctorChange;
+    document.getElementById('toggleNewDoctor').checked = !!data.newDoctor;
+    document.getElementById('toggleTargetDate').checked = !!data.targetDate;
+  }
+  function saveSettingsToggles(){
+    const data = {
+      doctorChange: document.getElementById('toggleDoctorChange').checked,
+      newDoctor: document.getElementById('toggleNewDoctor').checked,
+      targetDate: document.getElementById('toggleTargetDate').checked,
+    };
+    try{ localStorage.setItem('saringku_settings', JSON.stringify(data)); }catch(e){}
   }
 
   /* Renders the qualify-grid using live eligibility results from evaluateSchemes().
@@ -1064,16 +1266,40 @@
     buildSelect(document.getElementById('lastCheck'), lastCheckOptions, document.getElementById('lastCheck').value);
     buildSelect(document.getElementById('householdBand'), householdBandOptions, document.getElementById('householdBand').value);
     buildSelect(document.getElementById('clinicState'), stateList, document.getElementById('clinicState').value || 'Selangor');
+    buildSelect(document.getElementById('homeSearchState'), stateList, document.getElementById('homeSearchState').value || 'Selangor');
 
     document.getElementById('langEN').classList.toggle('active', currentLang === 'en');
     document.getElementById('langBM').classList.toggle('active', currentLang === 'bm');
     renderHasil();
+    renderHomeStats();
     if(currentTab === 'plan'){
       if(document.getElementById('plan-voucher-block').style.display === 'block' && lastOpenedScheme){
         showPlanVoucher(lastOpenedScheme);
       } else {
         renderPlanCards();
       }
+    }
+  }
+
+  /* homepage: search bar -> jumps to Find a Clinic with that state pre-selected */
+  function searchFromHome(){
+    const stateName = document.getElementById('homeSearchState').value || 'Selangor';
+    document.getElementById('clinicState').value = stateName;
+    showTab('clinics');
+  }
+
+  /* homepage: stat cards + DOSM callout, computed from real data already loaded */
+  function renderHomeStats(){
+    document.getElementById('stat-num1').textContent = schemesData.length;
+    document.getElementById('stat-num2').textContent = Object.keys(stateData).length;
+    document.getElementById('stat-num3').textContent = '40+';
+
+    const midAge = riskData.by_age_band['41-59'];
+    if(midAge){
+      const causeText = currentLang === 'en' ? midAge.top_cause_en : midAge.top_cause_bm;
+      document.getElementById('callout-text').textContent = currentLang === 'en'
+        ? `${causeText} caused ${midAge.share_pct}% of deaths among Malaysians aged 41–59 in 2024 — most of it is preventable with regular screening.`
+        : `${causeText} menyebabkan ${midAge.share_pct}% kematian dalam kalangan rakyat Malaysia berumur 41–59 tahun pada 2024 — kebanyakannya boleh dicegah dengan saringan berkala.`;
     }
   }
   function setLang(lang){
@@ -1146,10 +1372,11 @@
   buildSelect(document.getElementById('lastCheck'), lastCheckOptions);
   buildSelect(document.getElementById('householdBand'), householdBandOptions);
   buildSelect(document.getElementById('clinicState'), stateList, 'Selangor');
+  buildSelect(document.getElementById('homeSearchState'), stateList, 'Selangor');
   loadForm();
   applyLang();
-  loadLiveRiskData();
-  loadLiveSchemes();
+  loadLiveRiskData().then(renderHomeStats);
+  loadLiveSchemes().then(renderHomeStats);
 
   /* ---------- loading screen sequence ---------- */
   window.addEventListener('load', function(){
