@@ -104,7 +104,7 @@ exports.handler = async function (event) {
           m.cause,
           m.share_pct,
           CONCAT(
-            'Among Malaysians aged ', ${ageGroup}, ', ', LOWER(m.cause),
+            'Among Malaysians aged ', CAST(${ageGroup} AS text), ', ', LOWER(m.cause),
             ' accounts for ', m.share_pct,
             '% of certified deaths and is the leading cause in this age group.'
           ),
