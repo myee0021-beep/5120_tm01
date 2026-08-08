@@ -1,7 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "saringku",
+  "name": "5120-tm01-1",
   "compatibility_date": "2026-08-08",
   "compatibility_flags": ["nodejs_compat"],
-  "pages_build_output_dir": "."
+  "pages_build_output_dir": "./public"
 }
