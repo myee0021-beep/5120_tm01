@@ -1,18 +1,14 @@
-// Saves one completed SaringKu assessment to Neon (Postgres).
-// The insert is a single SQL statement so the user, assessment and risk rows
-// are created together or not at all.
-const { neon } = require('@neondatabase/serverless');
+import { neon } from '@neondatabase/serverless';
 
 const allowedSexes = new Set(['male', 'female']);
 const allowedSmoking = new Set(['never', 'sometimes', 'daily']);
 const allowedLastCheck = new Set(['lt1', '1to5', 'gt5']);
 
-function json(statusCode, body) {
-  return {
-    statusCode,
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  };
+function json(body, status = 200, headers = {}) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json; charset=utf-8', ...headers },
+  });
 }
 
 function ageGroupFor(age) {
@@ -29,20 +25,18 @@ function estimatedCheckupYear(lastCheck) {
   return year - 6;
 }
 
-exports.handler = async function (event) {
-  if (event.httpMethod !== 'POST') {
-    return json(405, { error: 'Method not allowed. Use POST.' });
-  }
-
-  if (!process.env.DATABASE_URL) {
-    return json(500, { error: 'DATABASE_URL environment variable is not set in Netlify.' });
+export async function onRequest(context) {
+  if (context.request.method !== 'POST') return json({ error: 'Method not allowed. Use POST.' }, 405, { Allow: 'POST' });
+  const databaseUrl = context.env.DATABASE_URL;
+  if (!databaseUrl) {
+    return json({ error: 'DATABASE_URL environment variable is not set in Cloudflare.' }, 500);
   }
 
   let body;
   try {
-    body = JSON.parse(event.body || '{}');
+    body = await context.request.json();
   } catch {
-    return json(400, { error: 'Request body must be valid JSON.' });
+    return json({ error: 'Request body must be valid JSON.' }, 400);
   }
 
   const age = Number(body.age);
@@ -52,26 +46,26 @@ exports.handler = async function (event) {
   const lastCheck = String(body.lastCheck || '');
 
   if (!Number.isInteger(age) || age < 0 || age > 120) {
-    return json(400, { error: 'Age must be a whole number between 0 and 120.' });
+    return json({ error: 'Age must be a whole number between 0 and 120.' }, 400);
   }
   if (!allowedSexes.has(sex)) {
-    return json(400, { error: 'Sex must be male or female.' });
+    return json({ error: 'Sex must be male or female.' }, 400);
   }
   if (!state || state.length > 50) {
-    return json(400, { error: 'State is required and must be 50 characters or fewer.' });
+    return json({ error: 'State is required and must be 50 characters or fewer.' }, 400);
   }
   if (!allowedSmoking.has(smoking)) {
-    return json(400, { error: 'Smoking must be never, sometimes or daily.' });
+    return json({ error: 'Smoking must be never, sometimes or daily.' }, 400);
   }
   if (!allowedLastCheck.has(lastCheck)) {
-    return json(400, { error: 'Last check-up band is invalid.' });
+    return json({ error: 'Last check-up band is invalid.' }, 400);
   }
 
   const ageGroup = ageGroupFor(age);
   const lastCheckupYear = estimatedCheckupYear(lastCheck);
 
   try {
-    const sql = neon(process.env.DATABASE_URL);
+    const sql = neon(databaseUrl);
     const rows = await sql`
       WITH selected_mortality AS (
         SELECT mortality_id, cause, share_pct
@@ -125,12 +119,13 @@ exports.handler = async function (event) {
     `;
 
     if (!rows.length) {
-      return json(422, { error: `No mortality data found for age group ${ageGroup}.` });
+      return json({ error: `No mortality data found for age group ${ageGroup}.` }, 422);
     }
 
-    return json(201, { saved: true, ...rows[0] });
+    return json({ saved: true, ...rows[0] }, 201);
   } catch (err) {
     console.error('[SaringKu] Failed to save assessment:', err);
-    return json(500, { error: 'Unable to save assessment.' });
+    return json({ error: 'Unable to save assessment.' }, 500);
   }
-};
+}
+
